@@ -12,8 +12,8 @@
 
 |            | Content                        | State       |
 | ---------- | ------------------------------ | ----------- |
-| :fire:     | [Simple PyTorch Model](https://github.com/ONEforALL-S003/TWO/tree/main/Junyeong/Simple%20PyTorch%20Model)       | In Progress |
-| :seedling: | [PyTorch Model Quantization]() | To Do       |
+| :white_check_mark:     | [Simple PyTorch Model](https://github.com/ONEforALL-S003/TWO/tree/main/Junyeong/Simple%20PyTorch%20Model)       | Complete |
+| :fire: | [PyTorch Model Quantization]() | In Progress |
 | :seedling: | [Torch to Circle]()            | To Do       |
 | :seedling: | [Qimplant]()                   | To Do       |
 | :seedling: | [Quantized Circle Model]()     | To Do       |
