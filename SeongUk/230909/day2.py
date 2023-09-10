@@ -25,3 +25,7 @@ model_static_quantized = quantization.convert(model_static_quantized, inplace=Fa
 # 모델 출력
 print('OneOperModel_quant')
 print(model_static_quantized)
+
+for key, module in model_static_quantized._modules.items():
+    print(module.scale)
+    print(module.zero_point)
