@@ -80,24 +80,24 @@ _dummy_ = torch.randn(1, 2, 3, 3)
 
 ONEforALL_Conv2d.pth
 
-![Alt text](image.png)
+![Alt text](assets/image.png)
 
 ONEforALL_Conv2d.onnx
 
-![Alt text](image-1.png)
+![Alt text](assets/image-1.png)
 
 ONEforALL_Conv2d.tflite
 
-![Alt text](image-2.png)
+![Alt text](assets/image-2.png)
 
 ONEforALL_Conv2d_For_Static.pth
 
-![Alt text](image-3.png)
+![Alt text](assets/image-3.png)
 
 ONEforALL_Conv2d_For_Static.onnx
 
-![Alt text](image-4.png)
+![Alt text](assets/image-4.png)
 
 ONEforALL_Conv2d_For_Static.tflite
 
-![Alt text](image-5.png)
+![Alt text](assets/image-5.png)
