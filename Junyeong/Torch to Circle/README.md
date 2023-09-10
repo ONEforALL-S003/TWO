@@ -74,3 +74,30 @@ _dummy_ = torch.randn(1, 2, 3, 3)
 ```
 
 산출물은 output 디렉토리 참조.
+
+
+## Netron 
+
+ONEforALL_Conv2d.pth
+
+![Alt text](image.png)
+
+ONEforALL_Conv2d.onnx
+
+![Alt text](image-1.png)
+
+ONEforALL_Conv2d.tflite
+
+![Alt text](image-2.png)
+
+ONEforALL_Conv2d_For_Static.pth
+
+![Alt text](image-3.png)
+
+ONEforALL_Conv2d_For_Static.onnx
+
+![Alt text](image-4.png)
+
+ONEforALL_Conv2d_For_Static.tflite
+
+![Alt text](image-5.png)
