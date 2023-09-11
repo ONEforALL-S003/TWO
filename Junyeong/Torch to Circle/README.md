@@ -116,6 +116,9 @@ ONEforALL_Conv2d.tflite
 
 ONEforALL_Conv2d.circle
 
+![image](https://github.com/ONEforALL-S003/TWO/assets/79979086/14b75f92-a066-4721-b8f7-226b6a6d5307)
+
+
 ONEforALL_Conv2d_For_Static.pth
 
 ![Alt text](assets/image-3.png)
@@ -129,3 +132,5 @@ ONEforALL_Conv2d_For_Static.tflite
 ![Alt text](assets/image-5.png)
 
 ONEforALL_Conv2d_For_Static.circle
+
+![image](https://github.com/ONEforALL-S003/TWO/assets/79979086/8859cfa0-4869-469e-9610-de3a8d0387f4)
