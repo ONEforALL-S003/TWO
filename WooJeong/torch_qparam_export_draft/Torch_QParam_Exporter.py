@@ -10,7 +10,7 @@ import json
 def permute(tensor):
     dim = len(tensor.shape)
     if dim == 4:  # NCHW to NHWC
-        tensor = tensor.permute(0, 3, 1, 2)
+        tensor = tensor.permute(0, 2, 3, 1)
     return tensor
 
 
