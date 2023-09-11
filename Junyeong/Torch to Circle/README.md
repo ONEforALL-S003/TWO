@@ -69,14 +69,38 @@ _model_ = M()
 
 #dummy
 _dummy_ = torch.randn(1, 2, 3, 3)
+```
 
+## torch2tflite
+
+ptem.py를 실행합니다
+
+```
+python3 ptem.py [예제 이름]
+
+python3 ptem.py ONEforALL_Conv2d_For_Static
 
 ```
 
+## tflite2circle
+
+- 사용 방법(one repo 필요)
+
+```
+./tflite2circle ./output/ONEforALL_Conv2d.tflite ./output/ONEforALL_Conv2d.circle
+```
+
+실행 파일 : tflite2circle
+input 파일 : ONEforALL_Conv2d.tflite
+출력 파일 명 : ONEforALL_Conv2d.circle
+
+- 참고
+
+tflite2circle 실행파일은
+
 산출물은 output 디렉토리 참조.
 
-
-## Netron 
+## Netron
 
 ONEforALL_Conv2d.pth
 
@@ -90,6 +114,11 @@ ONEforALL_Conv2d.tflite
 
 ![Alt text](assets/image-2.png)
 
+ONEforALL_Conv2d.circle
+
+![image](https://github.com/ONEforALL-S003/TWO/assets/79979086/14b75f92-a066-4721-b8f7-226b6a6d5307)
+
+
 ONEforALL_Conv2d_For_Static.pth
 
 ![Alt text](assets/image-3.png)
@@ -101,3 +130,7 @@ ONEforALL_Conv2d_For_Static.onnx
 ONEforALL_Conv2d_For_Static.tflite
 
 ![Alt text](assets/image-5.png)
+
+ONEforALL_Conv2d_For_Static.circle
+
+![image](https://github.com/ONEforALL-S003/TWO/assets/79979086/8859cfa0-4869-469e-9610-de3a8d0387f4)
