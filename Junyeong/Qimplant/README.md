@@ -29,3 +29,24 @@ bias의 경우 bias에만 해당하는 quantization parameter 를 찾을 수 없
 - Net_Conv2d.py, Net_Conv2d_3.py
 
 : Conv2d 모델을 생성하는 파일입니다. Net_Conv2d.py의 경우 Net_Conv2d_3.py 의 모델을 import하여 사용합니다.
+
+## 4. enhanced code
+
+우정님 코드의 tflite 파일을 바로 circle로 변환할 수 있도록 subprocess 를 이용하여 tflite2circle을 실행할 수 있도록 하였습니다.
+
+```python
+import subprocess
+
+# tflite2circle
+tflite_filename = 'conv2d_original.tflite'
+tflite_path = dir + tflite_filename
+circle_filename = tflite_filename.replace('.tflite', '.circle')
+output_path = dir + circle_filename
+
+# execute tflite2circle file
+try:
+    subprocess.run(['./tflite2circle', tflite_path, output_path], check=True)
+    print(f"{tflite_path} file is converted to {output_path}")
+except subprocess.CalledProcessError:
+    print("Error while converting tflite file")
+```
