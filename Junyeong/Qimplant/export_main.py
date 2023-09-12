@@ -10,6 +10,8 @@ import tensorflow as tf
 import os
 from Torch_QParam_Exporter import TorchQParamExporter
 
+import subprocess
+
 dir = "./out/"
 
 if not os.path.exists("out"):
@@ -38,6 +40,19 @@ converter.experimental_new_converter = True
 converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS]
 tflite_model = converter.convert()
 open(dir + "conv2d_original.tflite", "wb").write(tflite_model)
+
+# tflite2circle
+tflite_filename = 'conv2d_original.tflite'
+tflite_path = dir + tflite_filename
+circle_filename = tflite_filename.replace('.tflite', '.circle')
+output_path = dir + circle_filename
+
+# execute tflite2circle file
+try:
+    subprocess.run(['./tflite2circle', tflite_path, output_path], check=True)
+    print(f"{tflite_path} file is converted to {output_path}")
+except subprocess.CalledProcessError:
+    print("Error while converting tflite file")
 
 model.eval()
 model.qconfig = torch.quantization.get_default_qconfig('x86')
