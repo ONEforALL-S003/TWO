@@ -13,7 +13,7 @@ from Torch_QParam_Exporter import TorchQParamExporter
 dir = "./out/"
 
 if not os.path.exists("out"):
-    os.mkdir(dir);
+    os.mkdir(dir)
 
 torch.manual_seed(123456)
 
