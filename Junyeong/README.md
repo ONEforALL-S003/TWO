@@ -10,12 +10,10 @@
 
 <br /><br />
 
-|            | Content                        | State       |
-| ---------- | ------------------------------ | ----------- |
-| :white_check_mark:     | [Simple PyTorch Model](https://github.com/ONEforALL-S003/TWO/tree/main/Junyeong/Simple%20PyTorch%20Model)       | Complete |
-| :fire: | [PyTorch Model Quantization]() | In Progress |
-| :seedling: | [Torch to Circle]()            | To Do       |
-| :seedling: | [Qimplant]()                   | To Do       |
-| :seedling: | [Quantized Circle Model]()     | To Do       |
-
-
+|                    | Content                                                                                                   | State       |
+| ------------------ | --------------------------------------------------------------------------------------------------------- | ----------- |
+| :white_check_mark: | [Simple PyTorch Model](https://github.com/ONEforALL-S003/TWO/tree/main/Junyeong/Simple%20PyTorch%20Model) | Complete    |
+| :white_check_mark: | [PyTorch Model Quantization](https://github.com/ONEforALL-S003/TWO/tree/main/Junyeong/PyTorch%20Model%20Quantization)                                                                            | Complete    |
+| :white_check_mark: | [Torch to Circle](https://github.com/ONEforALL-S003/TWO/tree/main/Junyeong/Torch%20to%20Circle)                                                                                       | Complete    |
+| :white_check_mark:             | [Qimplant](https://github.com/ONEforALL-S003/TWO/tree/main/Junyeong/Qimplant)                                                                                              | Complete |
+| :fire:         | [Quantized Circle Model]()                                                                                | In Progress       |
