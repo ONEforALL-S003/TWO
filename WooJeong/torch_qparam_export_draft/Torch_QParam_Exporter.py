@@ -17,6 +17,8 @@ def permute(tensor):
 class TorchQParamExporter:
     def __save_np(self, data):
         file_name = str(self.__np_idx) + ".npy"
+        if data.shape==():
+            data = np.array([data])
         np.save(os.path.join(self.__dir_path, file_name), data)
         self.__np_idx += 1
         return file_name
