@@ -1,0 +1,93 @@
+{
+    "convolution;PartitionedCall/convolution": {
+        "scale": "2.npy",
+        "zerop": "3.npy",
+        "value": "4.npy",
+        "dtype": "int8",
+        "quantized_dimension": 0
+    },
+    "Add;PartitionedCall/Add;convolution_3;PartitionedCall/convolution_3;convolution;PartitionedCall/convolution;unknown_0": {
+        "scale": "5.npy",
+        "zerop": "6.npy",
+        "dtype": "uint8",
+        "quantized_dimension": 0
+    },
+    "convolution_1;PartitionedCall/convolution_1": {
+        "scale": "8.npy",
+        "zerop": "9.npy",
+        "value": "10.npy",
+        "dtype": "int8",
+        "quantized_dimension": 0
+    },
+    "Add_1;PartitionedCall/Add_1;convolution_5;PartitionedCall/convolution_5;convolution_1;PartitionedCall/convolution_1;unknown_2": {
+        "scale": "11.npy",
+        "zerop": "12.npy",
+        "dtype": "uint8",
+        "quantized_dimension": 0
+    },
+    "convolution_2;PartitionedCall/convolution_2": {
+        "scale": "14.npy",
+        "zerop": "15.npy",
+        "value": "16.npy",
+        "dtype": "int8",
+        "quantized_dimension": 0
+    },
+    "Add_2;PartitionedCall/Add_2;convolution_5;PartitionedCall/convolution_5;convolution_2;PartitionedCall/convolution_2;unknown_4": {
+        "scale": "17.npy",
+        "zerop": "18.npy",
+        "dtype": "uint8",
+        "quantized_dimension": 0
+    },
+    "convolution_3;PartitionedCall/convolution_3": {
+        "scale": "20.npy",
+        "zerop": "21.npy",
+        "value": "22.npy",
+        "dtype": "int8",
+        "quantized_dimension": 0
+    },
+    "Add_4;PartitionedCall/Add_4;convolution_3;PartitionedCall/convolution_3;unknown_6": {
+        "scale": "23.npy",
+        "zerop": "24.npy",
+        "dtype": "uint8",
+        "quantized_dimension": 0
+    },
+    "convolution_4;PartitionedCall/convolution_4": {
+        "scale": "26.npy",
+        "zerop": "27.npy",
+        "value": "28.npy",
+        "dtype": "int8",
+        "quantized_dimension": 0
+    },
+    "Add_5;PartitionedCall/Add_5;convolution_5;PartitionedCall/convolution_5;convolution_4;PartitionedCall/convolution_4;unknown_8": {
+        "scale": "29.npy",
+        "zerop": "30.npy",
+        "dtype": "uint8",
+        "quantized_dimension": 0
+    },
+    "convolution_5;PartitionedCall/convolution_5": {
+        "scale": "32.npy",
+        "zerop": "33.npy",
+        "value": "34.npy",
+        "dtype": "int8",
+        "quantized_dimension": 0
+    },
+    "Add_6;PartitionedCall/Add_6;convolution_5;PartitionedCall/convolution_5;unknown_10": {
+        "scale": "35.npy",
+        "zerop": "36.npy",
+        "dtype": "uint8",
+        "quantized_dimension": 0
+    },
+    "convolution_6;PartitionedCall/convolution_6": {
+        "scale": "38.npy",
+        "zerop": "39.npy",
+        "value": "40.npy",
+        "dtype": "int8",
+        "quantized_dimension": 0
+    },
+    "Add_7;PartitionedCall/Add_7;convolution_6;PartitionedCall/convolution_6;unknown_12": {
+        "scale": "41.npy",
+        "zerop": "42.npy",
+        "dtype": "uint8",
+        "quantized_dimension": 0
+    }
+}
