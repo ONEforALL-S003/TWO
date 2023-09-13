@@ -182,7 +182,8 @@ class TorchQParamExporter:
                 data[layer_name] = {
                     'scale': s_np,
                     'zerop': z_np,
-                    'dtype': default_dtype
+                    'dtype': default_dtype,
+                    'quantized_dimension': 0
                 }
 
                 b_name = name + '.bias'
@@ -198,7 +199,8 @@ class TorchQParamExporter:
                         'scale': s_np,
                         'zerop': z_np,
                         'dtype': default_dtype,
-                        'value': self.__save_np(quantized_bias)
+                        'value': self.__save_np(quantized_bias),
+                        'quantized_dimension': 0
                     }
         with open(self.__json_path, 'w') as json_file:
             json.dump(mapped_data, json_file)
@@ -212,6 +214,7 @@ class TorchQParamExporter:
         if tensor.qscheme() in (torch.per_tensor_affine, torch.per_tensor_symmetric):
             data['scale'] = self.__save_np(np.array(tensor.q_scale()))
             data['zerop'] = self.__save_np(np.array(tensor.q_zero_point()))
+            data['quantized_dimension'] = 0
         elif tensor.qscheme() in (torch.per_channel_affine, torch.per_channel_symmetric, torch.per_channel_affine_float_qparams):
             data['scale'] = self.__save_np(tensor.q_per_channel_scales().numpy())
             data['zerop'] = self.__save_np(tensor.q_per_channel_zero_points().numpy())
