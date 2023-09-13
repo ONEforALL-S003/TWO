@@ -13,3 +13,7 @@
     - [X] TFLite -> Circle 변환시 가중치가 잘못 변환되는 문제
 * Quantization Parameter 추출
     - [X] torch.quantization.QuantStub()은 모델 변환시 필요할까?
+
+### 2023.09.12
+* Extract Quantization Parameter from Single Linear Operation
+    - [ ] Specify dtype of tensor
