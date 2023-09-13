@@ -25,6 +25,13 @@ def permute(tensor):
         tensor = tensor.permute(0, 2, 3, 1)
     return tensor
 
+def quantize_bias(tensor, scale, zero_point, dtype=np.int8):
+    if dtype not in (np.uint8, np.int8, np.int32):
+        raise Exception('Check dtype of bias quantization')
+    bias = tensor.clone().detach().numpy()
+    bias = bias / scale + zero_point
+    return bias.astype(dtype)
+
 class TorchQParamExporter:
     def __save_np(self, data):
         file_name = str(self.__np_idx) + ".npy"
@@ -197,7 +204,7 @@ class TorchQParamExporter:
                     data = not_mapped_data
 
                 if "bias" in layer:
-                    quantized_bias = self.quantize_bias(layer['bias'], scale, zero_point)
+                    quantized_bias = quantize_bias(layer['bias'], scale, zero_point)
                     data[b_name] = {
                         'scale': s_np,
                         'zerop': z_np,
@@ -233,10 +240,3 @@ class TorchQParamExporter:
             data['value'] = self.__save_np(tensor.numpy())
         data['dtype'] = self.__qdtype_mapping[tensor.dtype]['str']
         return data
-
-    def quantize_bias(self, tensor, scale, zero_point, dtype=np.int8):
-        if dtype not in (np.uint8, np.int8, np.int32):
-            raise Exception('Check dtype of bias quantization')
-        bias = tensor.clone().detach().numpy()
-        bias = bias / scale + zero_point
-        return bias.astype(dtype)
