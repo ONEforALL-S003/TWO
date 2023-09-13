@@ -30,6 +30,9 @@ class TorchQParamExporter:
         file_name = str(self.__np_idx) + ".npy"
         if data.shape==():
             data = np.array([data])
+        #  python interpreter 64 may be uses float64 for default
+        if data.dtype == np.dtype(np.float64):
+            data = data.astype(np.float32)
         np.save(os.path.join(self.__dir_path, file_name), data)
         self.__np_idx += 1
         return file_name
@@ -179,12 +182,12 @@ class TorchQParamExporter:
 
                 s_np = self.__save_np(scale)
                 z_np = self.__save_np(zero_point)
-                data[layer_name] = {
-                    'scale': s_np,
-                    'zerop': z_np,
-                    'dtype': default_dtype,
-                    'quantized_dimension': 0
-                }
+                # data[layer_name] = {
+                #     'scale': s_np,
+                #     'zerop': z_np,
+                #     'dtype': default_dtype,
+                #     'quantized_dimension': 0
+                # }
 
                 b_name = name + '.bias'
                 if b_name in mapping:
@@ -236,4 +239,4 @@ class TorchQParamExporter:
             raise Exception('Check dtype of bias quantization')
         bias = tensor.clone().detach().numpy()
         bias = bias / scale + zero_point
-        return bias
+        return bias.astype(dtype)
