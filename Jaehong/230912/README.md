@@ -2,6 +2,10 @@
 
 이슈 발생
 
+- `quantization_dimension`은 어떻게 넣을 것인가?
+
+    - torch에서는 별도로 정의되지 않는 필드지만 circle에서는 필요하다면, 수동으로 집어넣을 것인가.
+
 - `Luci::CircleParam`의 내부 Tensor가 float형 vector를 받음
 
     -> float64 넣으면 터짐. 32짜리로 바꿔줘야 하는가?
