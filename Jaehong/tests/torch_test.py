@@ -34,6 +34,7 @@ class QuantModel(nn.Module):
     wrapper class for quantized model
     '''
     def __init__(self, x):
+        super().__init__()
         self.quant = torch.quantization.QuantStub()
         self.net = x
         self.dequant = torch.quantization.DeQuantStub()
@@ -78,8 +79,11 @@ for example in args.examples:
     quantized = torch.quantization.convert(p_model)
     quantized(dummy)
     torch.save(quantized, output_folder + example + "_quantized.pth")
-    print("Generate '" + example + ".pth' - Done")
+    print("Generate '" + example + "_quantized.pth' - Done")
 
     
     exporter = TorchQParamExporter(quantized_model=quantized, json_path=output_folder + "qparam.json")
+    # exporter.set_mapping() ?
     exporter.save()
+
+
