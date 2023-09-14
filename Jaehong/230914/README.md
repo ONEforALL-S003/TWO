@@ -12,22 +12,11 @@ examples의 모든 모델들은 quantization을 고려하지 않은 모델이므
 
 ```
 PS D:\TWO\Jaehong\tests> python3 .\torch_test.py Conv2d
-C:\Users\SSAFY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\tensorflow_addons\utils\tfa_eol_msg.py:23: UserWarning: 
-
-TensorFlow Addons (TFA) has ended development and introduction of new features.
-TFA has entered a minimal maintenance and release mode until a planned end of life in May 2024.
-Please modify downstream libraries to take dependencies from other repositories in our TensorFlow community (e.g. Keras, Keras-CV, and Keras-NLP).
-
-For more information see: https://github.com/tensorflow/addons/issues/2807
-
-  warnings.warn(
 PyTorch version= 2.0.1+cpu
 ONNX version= 1.14.1
 ONNX-TF version= 1.10.0
 TF version= 2.13.0
 Generate 'Conv2d.pth' - Done
-C:\Users\SSAFY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\torch\ao\quantization\observer.py:214: UserWarning: Please use quant_min and quant_max to specify the range for observers.                     reduce_range will be deprecated in a future release of PyTorch.
-  warnings.warn(
 Generate 'Conv2d_quantized.pth' - Done
 QuantModel(
   (quant): Quantize(scale=tensor([0.0221]), zero_point=tensor([80]), dtype=torch.quint8)
@@ -62,4 +51,40 @@ Traceback (most recent call last):
     tensor = tensor.permute(0, 2, 3, 1)
              ^^^^^^^^^^^^^^^^^^^^^^^^^^
 RuntimeError: Setting strides is possible only on uniformly quantized tensor
+```
+
+Linear
+```
+PS D:\TWO\Jaehong\tests> python3 .\torch_test.py Linear
+PyTorch version= 2.0.1+cpu
+ONNX version= 1.14.1
+ONNX-TF version= 1.10.0
+TF version= 2.13.0
+Generate 'Linear.pth' - Done
+Generate 'Linear_quantized.pth' - Done
+QuantModel(
+  (quant): Quantize(scale=tensor([0.0385]), zero_point=tensor([58]), dtype=torch.quint8)
+  (net): net_Linear(
+    (op): QuantizedLinear(in_features=3, out_features=6, scale=0.03507407754659653, zero_point=49, qscheme=torch.per_channel_affine)
+  )
+  (dequant): DeQuantize()
+)
+quant.scale tensor([0.0385])
+quant.zero_point tensor([58])
+net.op.scale tensor(0.0351)
+net.op.zero_point tensor(49)
+net.op._packed_params.dtype torch.qint8
+Traceback (most recent call last):
+  File "D:\TWO\Jaehong\tests\torch_test.py", line 86, in <module>
+    exporter = TorchQParamExporter(quantized_model=quantized, json_path=output_folder + "qparam.json")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\TWO\Jaehong\tests\Torch_QParam_Exporter.py", line 63, in __init__
+    self.__extract_module(module=quantized_model)
+  File "D:\TWO\Jaehong\tests\Torch_QParam_Exporter.py", line 154, in __extract_module
+    data[tensor_name] = permute(tensor)
+                        ^^^^^^^^^^^^^^^
+  File "D:\TWO\Jaehong\tests\Torch_QParam_Exporter.py", line 23, in permute
+    dim = len(tensor.shape)
+              ^^^^^^^^^^^^
+AttributeError: 'torch.dtype' object has no attribute 'shape'
 ```
