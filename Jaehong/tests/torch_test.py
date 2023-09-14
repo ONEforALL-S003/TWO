@@ -26,7 +26,13 @@ import argparse
 
 from pathlib import Path
 
+from Torch_QParam_Exporter import TorchQParamExporter
+
+
 class QuantModel(nn.Module):
+    '''
+    wrapper class for quantized model
+    '''
     def __init__(self, x):
         self.quant = torch.quantization.QuantStub()
         self.net = x
@@ -56,4 +62,24 @@ output_folder = "./output/"
 Path(output_folder).mkdir(parents=True, exist_ok=True)
 
 for example in args.examples:
-  print(example)
+  # load example code
+    module = importlib.import_module("examples." + example)
+    model, dummy = QuantModel(module._model_), module._dummy_
+
+    # save .pth
+    torch.save(module._model_, output_folder + example + ".pth")
+    print("Generate '" + example + ".pth' - Done")
+
+
+    model.eval()
+    model.qconfig = torch.quantization.get_default_qconfig('x86')
+    p_model = torch.quantization.prepare(model)
+    p_model(dummy)
+    quantized = torch.quantization.convert(p_model)
+    quantized(dummy)
+    torch.save(quantized, output_folder + example + "_quantized.pth")
+    print("Generate '" + example + ".pth' - Done")
+
+    
+    exporter = TorchQParamExporter(quantized_model=quantized, json_path=output_folder + "qparam.json")
+    exporter.save()
