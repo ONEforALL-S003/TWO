@@ -143,6 +143,7 @@ class TorchQParamExporter:
     def __extract_module(self, module):
         tree = self.__tree
         for name, tensor in module.state_dict().items():
+            print(name, tensor)
             layer = name[:name.rfind(".")]
             if layer in tree:
                 data = tree[layer]

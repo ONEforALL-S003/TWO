@@ -81,9 +81,12 @@ for example in args.examples:
     torch.save(quantized, output_folder + example + "_quantized.pth")
     print("Generate '" + example + "_quantized.pth' - Done")
 
+    print(quantized)
     
     exporter = TorchQParamExporter(quantized_model=quantized, json_path=output_folder + "qparam.json")
     # exporter.set_mapping() ?
-    exporter.save()
+    # exporter.save()
+
+
 
 
