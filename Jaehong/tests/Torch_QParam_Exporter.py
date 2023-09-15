@@ -29,19 +29,19 @@ class TorchQParamExporter:
             raise Exception("There is no Pytorch Model")
         if json_path is None:
             raise Exception("Please specify save path")
-        self.__json_path = json_path
+        
         idx = json_path.rfind(os.path.sep)
         if idx == -1:
-            self.__dir_path = ""
-            self.__json_file_name = json_path
+            dir_path = ""
+            json_file_name = json_path
         else:
-            self.__dir_path = json_path[:idx + 1]
-            self.__json_file_name = json_path[idx + 1:]
+            dir_path = json_path[:idx + 1]
+            json_file_name = json_path[idx + 1:]
 
         self.__quantized_model = quantized_model
 
-        self.__mapper = Torch2CircleMapper(self.__dir_path)
-        self.__extractor = TorchExtractor(self.__dir_path, self.__json_path, self.__json_file_name)
+        self.__mapper = Torch2CircleMapper(dir_path)
+        self.__extractor = TorchExtractor(dir_path, json_path, json_file_name)
 
         self.__mapping = None
 
