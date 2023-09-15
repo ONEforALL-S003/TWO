@@ -22,7 +22,7 @@ from include.circle.SubGraph import SubGraph
 
 
 class TorchExtractor:
-    __qdtype_mapping = {
+    qdtype_mapping = {
         torch.quint8: {'str': "uint8", 'np': np.uint8},
         torch.qint8: {'str': "int8", 'np': np.int8},
         torch.qint32: {'str': "int32", 'np': np.int32}
@@ -34,6 +34,14 @@ class TorchExtractor:
         if dim == 4:  # NCHW to NHWC
             tensor = tensor.permute(0, 2, 3, 1)
         return tensor
+    
+    @staticmethod
+    def quantize_bias(tensor, scale, zero_point, dtype=np.int8):
+        if dtype not in (np.uint8, np.int8, np.int32):
+            raise Exception('Check dtype of bias quantization')
+        bias = tensor.clone().detach().numpy()
+        bias = bias / scale + zero_point
+        return bias.astype(dtype)
 
 
     def __init__(self, dir_path: str, json_path: str, json_file_name: str):
@@ -91,7 +99,7 @@ class TorchExtractor:
             data['value'] = self.__save_np(torch.int_repr(tensor).numpy())
         else:
             data['value'] = self.__save_np(tensor.numpy())
-        data['dtype'] = self.__qdtype_mapping[tensor.dtype]['str']
+        data['dtype'] = self.qdtype_mapping[tensor.dtype]['str']
         return data
     
 
@@ -112,7 +120,7 @@ class TorchExtractor:
                 else:
                     data = not_mapped_data
                 if tensor.is_quantized:
-                    default_dtype = self.__qdtype_mapping[tensor.dtype]['str']
+                    default_dtype = self.qdtype_mapping[tensor.dtype]['str']
                     data[w_name] = self.__from_tensor(tensor=tensor)
             if "scale" in layer and "zero_point" in layer:
                 # not sure about torch operator's scale and zero_point is for bias or input

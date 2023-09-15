@@ -22,18 +22,6 @@ from include.circle.Model import Model
 from Torch2CircleMapper import Torch2CircleMapper
 from TorchExtractor import TorchExtractor
 
-def permute(tensor):
-    dim = len(tensor.shape)
-    if dim == 4:  # NCHW to NHWC
-        tensor = tensor.permute(0, 2, 3, 1)
-    return tensor
-
-def quantize_bias(tensor, scale, zero_point, dtype=np.int8):
-    if dtype not in (np.uint8, np.int8, np.int32):
-        raise Exception('Check dtype of bias quantization')
-    bias = tensor.clone().detach().numpy()
-    bias = bias / scale + zero_point
-    return bias.astype(dtype)
 
 class TorchQParamExporter:
     def __init__(self, quantized_model :torch.nn.Module, json_path: str):

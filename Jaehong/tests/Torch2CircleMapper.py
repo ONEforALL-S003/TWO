@@ -54,6 +54,7 @@ class Torch2CircleMapper:
         tf_prep = onnx_tf.backend.prepare(inferred_model)
         tf_path = os.path.join(dir_path, 'tmp.tf')
         tf_prep.export_graph(path=tf_path)
+        graph_def = tf_prep.tf_module.graph_def
         converter = tf.lite.TFLiteConverter.from_saved_model(tf_path)
         converter.allow_custom_ops = True
         converter.experimental_new_converter = True
@@ -61,16 +62,14 @@ class Torch2CircleMapper:
         tflite_model = converter.convert()
         tflite_path = os.path.join(dir_path, 'tmp.tflite')
         open(tflite_path, "wb").write(tflite_model)
-        circle_path = os.path.join(dir_path, 'tmp.circle')
+        circle_path = os.path.join(self.__dir_path, 'input.circle')
         try:
+            #  TODO: Need to set relative path of build of tflite2circle or get path by program argument
             subprocess.run(['./tflite2circle', tflite_path, circle_path], check=True)
-        except:
+        except Exception:
             print('Fail to convert to circle')
-        
-        circle_path = self.__torch2circle(original_model, sample_input)
         buf = bytearray(open(circle_path, 'rb').read())
-        circle = Model.GetRootAsModel(buf)
-        return circle
+        return Model.GetRootAsModel(buf)
 
 
     def __circle_subgraph_mapping_traverse(self, circle: Model, graph: SubGraph):
