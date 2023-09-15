@@ -49,3 +49,6 @@ torch.save(quantized, dir + "conv2d_quantized.pth")
 
 print(quantized)
 exporter = TorchQParamExporter(quantized_model=quantized, json_path="export/Net_Conv2d/qparam.json")
+model = Net_Conv2d()
+exporter.set_mapping(original_model=model, sample_input=input)
+exporter.save()
