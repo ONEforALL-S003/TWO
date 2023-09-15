@@ -54,7 +54,6 @@ class TorchExtractor:
     def extract_module(self, module: torch.nn.Module) -> collections.OrderedDict:
         tree = collections.OrderedDict()
         for name, tensor in module.state_dict().items():
-            print(name, tensor)
             layer = name[:name.rfind(".")]
             if layer in tree:
                 data = tree[layer]

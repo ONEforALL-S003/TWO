@@ -84,9 +84,5 @@ for example in args.examples:
     print(quantized)
     
     exporter = TorchQParamExporter(quantized_model=quantized, json_path=output_folder + "qparam.json")
-    # exporter.set_mapping() ?
-    # exporter.save()
-
-
-
-
+    exporter.set_mapping(original_model=model, sample_input=dummy)
+    exporter.save()
