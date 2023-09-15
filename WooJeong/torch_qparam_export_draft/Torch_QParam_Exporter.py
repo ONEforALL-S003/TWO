@@ -106,13 +106,19 @@ class TorchQParamExporter:
 
         input_list = []
         output_list = []
+        prev_module_name = None
         for name, mod in original_model.named_modules():
             if name == '':  # it's just model itself
                 continue
+
+            class_name = str(type(mod))
             if isinstance(mod, torch.quantization.QuantStub):
                 input_list.append(name)
             elif isinstance(mod, torch.quantization.DeQuantStub):
                 output_list.append(name)
+            elif class_name.find('activation') != -1:
+                self.__tree[name]['prev_op'] = prev_module_name
+            prev_module_name = name
 
         if len(input_list) == 1 and len(self.__network_input) == 1:
             self.__mapping[input_list[0]] = self.__network_input[0].Name().decode('utf-8')
@@ -142,7 +148,6 @@ class TorchQParamExporter:
         tf_prep = onnx_tf.backend.prepare(inferred_model)
         tf_path = os.path.join(dir_path, 'tmp.tf')
         tf_prep.export_graph(path=tf_path)
-        graph_def = tf_prep.tf_module.graph_def
         converter = tf.lite.TFLiteConverter.from_saved_model(tf_path)
         converter.allow_custom_ops = True
         converter.experimental_new_converter = True
@@ -196,30 +201,38 @@ class TorchQParamExporter:
         for i in range(graph.OperatorsLength()):
             operator = graph.Operators(i)
             input_set = set(operator.InputsAsNumpy().tolist())
-
             for op_name, op_input in op_mapping.items():
-                need_break = False
                 if input_set.issuperset(op_input):
-                    need_break = True
                     input_set = input_set - op_input
                     for tensor_idx in input_set:
                         tensor = graph.Tensors(tensor_idx)
                         tensor_name = tensor.Name().decode('utf-8')
                         mapping[op_name] = tensor_name
-                if need_break:
+
+                    # can mapping output because it has only one!
+                    if operator.OutputsLength() == 1:
+                        output_tensor = graph.Tensors(operator.Outputs(0))
+                        output_tensor_name = output_tensor.Name().decode('utf-8')
+                        mapping[op_name + '.out'] = output_tensor_name
                     break
 
-    def __extract_module(self, module):
+    def __extract_module(self, module, prefix=''):
         tree = self.__tree
-        for name, tensor in module.state_dict().items():
-            layer = name[:name.rfind(".")]
-            if layer in tree:
-                data = tree[layer]
+
+        for name, mod in module.named_modules():
+            if name == '' or str(type(mod)).find('.nn.quantized.modules') == -1:
+                continue
+            if name in tree:
+                data = tree[name]
             else:
                 data = {}
-                tree[layer] = data
-            tensor_name = name[name.rfind(".") + 1:]
-            data[tensor_name] = permute(tensor)
+                tree[name] = data
+
+            for value_name, tensor in mod.state_dict().items():
+                if str(type(mod)).find('.nn.quantized.modules') == -1:
+                    continue
+                tensor_name = value_name[value_name.rfind(".") + 1:]
+                data[tensor_name] = permute(tensor)
 
     def save(self):
         tree = self.__tree
@@ -282,6 +295,30 @@ class TorchQParamExporter:
                         'value': self.__save_np(quantized_bias),
                         'quantized_dimension': 0
                     }
+            # such as RELU or transpose like that, inherit quantization parameter
+            elif 'prev_op' in layer:
+                parent_name = tree[name]['prev_op']
+                if mapping[parent_name] in mapped_data:
+                    parent = mapped_data[mapping[parent_name]]
+                else:
+                    parent = not_mapped_data[parent_name]
+
+                if parent_name + '.out' in mapping:
+                    t_name = mapping[parent_name + '.out']
+                    data = mapped_data
+                else:
+                    t_name = name
+                    data = not_mapped_data
+
+                data[t_name] = {
+                    'scale': parent['scale'],
+                    'zerop': parent['zerop'],
+                    'dtype': parent['dtype'],
+                    'quantized_dimension': 0
+                }
+                pass
+        pass
+
         with open(self.__json_path, 'w') as json_file:
             json.dump(mapped_data, json_file)
 
