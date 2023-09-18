@@ -122,6 +122,8 @@ class Torch2CircleMapper:
 
         if len(input_list) == 1 and len(self.__network_input) == 1:
             self.__mapping[input_list[0]] = self.__network_input[0].Name().decode('utf-8')
+        elif len(input_list) == 0:
+            print("There are no QuantStub on the Network. Please check it manually")
         else:
             print("There are more than one input of Network. Please map it manually")
 

@@ -33,7 +33,6 @@ class Torch2Circle:
         circle_path = os.path.join(dir_path, 'input.circle')
         circle = Torch2Circle.__toCircle(tflite_path, circle_path, tflite2circle_path)
         shutil.rmtree(tmp_path)
-
         if clean_circle:
             os.remove(circle_path)
 

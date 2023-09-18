@@ -5,7 +5,7 @@ import torch.quantization
 import numpy as np
 import collections
 import json
-
+import torch.nn.quantized.modules.linear
 
 def quantize_tensor(tensor: torch.Tensor, scale, zero_point, dtype=np.int8) -> torch.Tensor:
     if dtype not in (np.uint8, np.int8, np.int32):
@@ -53,6 +53,9 @@ class TorchExtractor:
             # TODO: check whether there is better way to check instance of torch.nn.quantized.modules.* and not torch.nn.modules.Module
             if name == '' or str(type(mod)).find('.nn.quantized.modules') == -1:
                 continue
+            if isinstance(mod, torch.nn.quantized.modules.linear.LinearPackedParams):
+                continue
+
             if name in graph_data:
                 data = graph_data[name]
             elif name in partial_graph_data:
@@ -60,13 +63,23 @@ class TorchExtractor:
             else:
                 data = {}
                 graph_data[name] = data
-
+            dtype = torch.quint8 # for checking in Linear
             for value_name, tensor in mod.state_dict().items():
                 # Need to skip just Module. Only Operator/Tensor/Activation Needed
                 # TODO: Find better way to check instance of torch.nn.quantized.modules
                 if str(type(mod)).find('.nn.quantized.modules') == -1:
                     continue
                 tensor_name = value_name[value_name.rfind(".") + 1:]
+                prefix = value_name[: value_name.rfind(".")]
+                # for Linear
+                if prefix.find('_packed_params') != -1:
+                    if tensor_name == 'dtype':
+                        dtype = tensor
+                    elif tensor_name == '_packed_params':
+                        data['weight'] = tensor[0]
+                        data['bias'] = tensor[1]
+                    continue
+
                 data[tensor_name] = TorchExtractor.permute(
                     tensor)  # TODO: set it just permute, not TorchExtractor.permute
 
@@ -192,3 +205,4 @@ class TorchExtractor:
         if len(not_mapped_data) > 0:
             with open(os.path.join(self.__dir_path, 'not_mapped_' + self.__json_file_name), 'w') as json_file:
                 json.dump(not_mapped_data, json_file)
+                
