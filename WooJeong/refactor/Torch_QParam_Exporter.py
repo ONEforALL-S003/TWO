@@ -13,10 +13,10 @@ class TorchQParamExporter:
     @staticmethod
     def export(original_model: torch.nn.Module, quantized_model: torch.nn.Module,
                  sample_input: torch.tensor, json_path: str, tflite2circle_path='./tflite2circle'):
-        if quantized_model is None or not isinstance(original_model, torch.nn.Module):
-            raise Exception("There is no Pytorch Model")
+        if original_model is None or not isinstance(original_model, torch.nn.Module):
+            raise Exception("There is no original Pytorch Model")
         if quantized_model is None or not isinstance(quantized_model, torch.nn.Module):
-            raise Exception("There is no Pytorch Model")
+            raise Exception("There is no quantized Pytorch Model")
         if json_path is None:
             raise Exception("Please specify save path")
         if sample_input is None or not isinstance(sample_input, torch.Tensor):
