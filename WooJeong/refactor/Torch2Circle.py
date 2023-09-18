@@ -27,6 +27,7 @@ class Torch2Circle:
         tmp_path = os.path.join(dir_path, 'tmp')
         if not os.path.exists(tmp_path):
             os.makedirs(tmp_path, exist_ok=True)
+        tmp_path = os.path.join(dir_path, 'tmp')
         onnx_inferred_model = Torch2Circle.__toOnnx(original_model, sample_input, tmp_path)
         tflite_path = Torch2Circle.__toTflite(onnx_inferred_model, tmp_path)
         circle_path = os.path.join(dir_path, 'input.circle')

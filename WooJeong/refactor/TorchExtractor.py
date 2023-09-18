@@ -31,6 +31,7 @@ class TorchExtractor:
 
     def __init__(self, quantized_model: torch.nn.Module, json_path: str, partial_graph_data: None):
         self.__np_idx = 0
+        self.__input_dtype = None
         self.__graph_data = collections.OrderedDict()
         self.__partial_graph_data = partial_graph_data
         self.__json_path = json_path
@@ -56,6 +57,9 @@ class TorchExtractor:
             if isinstance(mod, torch.nn.quantized.modules.linear.LinearPackedParams):
                 continue
 
+            if self.__input_dtype is None and (hasattr(mod, 'scale') and hasattr(mod, 'zero_point')):
+                self.__input_dtype = mod.dtype
+
             if name in graph_data:
                 data = graph_data[name]
             elif name in partial_graph_data:
@@ -63,7 +67,6 @@ class TorchExtractor:
             else:
                 data = {}
                 graph_data[name] = data
-            dtype = torch.quint8 # for checking in Linear
             for value_name, tensor in mod.state_dict().items():
                 # Need to skip just Module. Only Operator/Tensor/Activation Needed
                 # TODO: Find better way to check instance of torch.nn.quantized.modules
@@ -73,9 +76,7 @@ class TorchExtractor:
                 prefix = value_name[: value_name.rfind(".")]
                 # for Linear
                 if prefix.find('_packed_params') != -1:
-                    if tensor_name == 'dtype':
-                        dtype = tensor
-                    elif tensor_name == '_packed_params':
+                    if tensor_name == '_packed_params':
                         data['weight'] = tensor[0]
                         data['bias'] = tensor[1]
                     continue
@@ -131,7 +132,7 @@ class TorchExtractor:
             mapping = {}
 
         for name, layer in graph_data.items():
-            dtype = 'uint8'
+            dtype = self.qdtype_mapping[self.__input_dtype]['str']
             if "weight" in layer:
                 w_name = name + '.weight'
                 tensor = layer['weight']
@@ -141,7 +142,6 @@ class TorchExtractor:
                 else:
                     data = not_mapped_data
                 if tensor.is_quantized:
-                    dtype = self.qdtype_mapping[tensor.dtype]['str']
                     data[w_name] = self.__from_tensor(tensor=tensor)
             if "scale" in layer and "zero_point" in layer:
                 scale = layer['scale'].numpy()

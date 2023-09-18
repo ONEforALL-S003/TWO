@@ -55,7 +55,7 @@ class Torch2CircleMapper:
         while True:
             try:
                 circle = Torch2Circle.toCircle(original_model, sample_input, self.__dir_path,
-                                               tflite2circle_path=self.__tflite2circle_path, clean_circle=True)
+                                               tflite2circle_path=self.__tflite2circle_path, clean_circle=False)
                 self.__generate_mapped_dict(circle)
                 break
             except Exception:
