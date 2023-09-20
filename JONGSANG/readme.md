@@ -18,3 +18,14 @@
 ### 2023.09.12
 * Extract Quantization Parameter from Single Linear Operation
     - [ ] Specify dtype of tensor
+
+### 2023.09.13
+* Extract Quantization Parameter from _packed_params
+
+### 2023.09.19
+* Extract Quantization Parameter from Single ConvTranspose2d Operation
+    - [ ] Not mapped QP exists
+
+### 2023.09.20
+* Q-extractor-torch를 테스트하기 위한, 사전 준비
+    * one/res/PyTorchExamples/examples/의 모든 OP를 PTSQ
