@@ -9,6 +9,10 @@
 
     - Exporter에는 2개의 메서드만 남기고, 나머지는 기능에 따라 따로 나눠 넣었다.
 
+    - `qdtype_mapping`은 변하지 않는 값을 매핑해 넣은 것이므로 고유할 필요가 없다 -> cls variable로 전환
+
+    
+
 - 실행 결과
 
     - `export_main.py` pass
