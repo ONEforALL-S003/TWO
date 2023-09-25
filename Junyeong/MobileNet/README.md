@@ -59,4 +59,4 @@ bias -> 3
 ./one/build/compier/circledump/circledump /one/compiler/q-implant/tests/test_output/MN_input.circle
 ```
 
-결과물은 mobilenet_circle_log.txt 에 저장.
+결과물은 [mobilenet_circle_log.txt](https://github.com/ONEforALL-S003/TWO/blob/main/Junyeong/MobileNet/mobilenet_circle_log.txt)https://github.com/ONEforALL-S003/TWO/blob/main/Junyeong/MobileNet/mobilenet_circle_log.txt 에 저장.
