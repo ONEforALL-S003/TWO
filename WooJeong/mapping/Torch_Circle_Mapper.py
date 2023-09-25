@@ -33,6 +33,7 @@ from include.circle.Model import Model
 from include.circle.SubGraph import SubGraph
 from include.circle.Tensor import Tensor
 from include.circle.TensorType import TensorType
+from include.circle.BuiltinOperator import BuiltinOperator
 
 
 class Torch2CircleMapper:
@@ -280,11 +281,23 @@ class Torch2CircleMapper:
                     op_mapping[op_name] = set()
                 op_mapping[op_name].add(idx)
 
+        builtin_op_resolver = {}
+
+        for i in inspect.getmembers(BuiltinOperator):
+            if not i[0].startswith('_') and not inspect.ismethod(i[1]):
+                builtin_op_resolver[i[1]] = i[0].lower()
+
+        graph_data = self.__partial_graph_data
+
         # approximately it takes O(N^2)
         # we need to think to it better way or not
         # TODO: maybe Trie will works. Check it whether it works or not
         for i in range(graph.OperatorsLength()):
             operator = graph.Operators(i)
+            opcode = operator.OpcodeIndex()
+            opcode = circle.OperatorCodes(opcode).BuiltinCode()
+            builtin_op_name = builtin_op_resolver[opcode]
+
             # get operator's input tensor's indexes
             input_set = set(operator.InputsAsNumpy().tolist())
 
@@ -299,6 +312,9 @@ class Torch2CircleMapper:
                         tensor_name = tensor.Name().decode('utf-8')
                         # torch operator name -> circle operator name
                         mapping[op_name] = tensor_name
+                        if op_name not in graph_data:
+                            graph_data[op_name] = {}
+                        graph_data[op_name]['op_type'] = builtin_op_name
 
                     # can mapping output because it has only one!
                     if operator.OutputsLength() == 1:

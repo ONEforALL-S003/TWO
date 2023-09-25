@@ -231,7 +231,7 @@ class TorchExtractor:
                     'zerop': z_np,
                     'quantized_dimension': 0,
                     'dtype': dtype,
-                    'value': self.__save_np(weight)
+                    'value': self.__save_np(bias)
                 }
                 continue
 
