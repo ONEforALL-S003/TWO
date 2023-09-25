@@ -29,3 +29,7 @@
 ### 2023.09.20
 * Q-extractor-torch를 테스트하기 위한, 사전 준비
     * one/res/PyTorchExamples/examples/의 모든 OP를 PTSQ
+
+
+### 2023.09.26
+* Inception 블럭 단위 테스트
