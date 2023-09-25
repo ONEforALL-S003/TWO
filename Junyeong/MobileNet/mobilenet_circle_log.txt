@@ -1,0 +1,483 @@
+Dump: /one/compiler/q-implant/tests/test_output/MN_input.circle
+
+===================================================================
+Model version: 0
+ # sub graphs: 1
+
+Operator Codes: [order] OpCodeName (OpCode Enum)
+[0] AVERAGE_POOL_2D (code: 1, dep_code: 1, version: 1)
+[1] CONV_2D (code: 3, dep_code: 3, version: 1)
+[2] DEPTHWISE_CONV_2D (code: 4, dep_code: 4, version: 1)
+[3] SOFTMAX (code: 25, dep_code: 25, version: 1)
+[4] RESHAPE (code: 22, dep_code: 22, version: 1)
+
+Buffers: B(index) (length) values, if any
+B(0) (0) 
+B(1) (4004) 0xb9 0x5a 0xd4 0xbf 0x54 0xc2 0xf6 0xbe 0x9b 0x8f 0xc8 0x3c 0x75 0xc6 0x7b 0xbf ...
+B(2) (4096) 00 0x38 0xf0 0x3b 0xd2 0x8 0xf0 0x40 0x1e 0x2d 0x5 0x41 0x35 0x2 0x2e 0xc1 ...
+B(3) (4096) 0xeb 0x7f 0x59 0x40 0xa6 0xd 0x33 0x40 0x37 0xd7 0x25 0x40 0x42 0xbe 0xdb 0x3f ...
+B(4) (4096) 0x75 0xcb 0xe7 0xbf 0xc7 0x73 0x26 0xc0 0x70 0xff 0x75 0x3d 0xc6 0x68 0x5a 0x3f ...
+B(5) (2048) 0xbf 0xae 0x62 0x40 0x9f 0x3b 0x7e 0x40 0x70 0x9d 0xab 0x3c 0x8 0x4f 0xc 0x3d ...
+B(6) (2048) 0x8 0xaf 0x82 0x3f 0xd8 0x14 0xe5 0x3e 0x4a 0xae 0x99 0xc0 0xf1 0x24 0x67 0xbf ...
+B(7) (2048) 0x22 0xbd 0xcb 0x40 0x48 0xa2 0xa2 0xc0 0x79 0x2f 0xb6 0x40 0x78 0x79 0x51 0xbf ...
+B(8) (2048) 0xc7 0x8b 0xa2 0x3f 0x40 0x39 0x8d 0x3f 0x9e 0x53 0xee 0x3f 0x6e 0x2b 0xb2 0xbf ...
+B(9) (2048) 0x29 0x1f 0xf6 0x3f 0x67 0xc4 0x9f 0xbf 0x7d 0x2a 0x9e 0xbf 0x45 0xba 0xb1 0x3e ...
+B(10) (2048) 0xc0 0xee 0xec 0x3d 0x4f 0x51 0xb9 0x3f 0x73 0x7e 0x5e 0x40 0xec 0xba 0xc 0x40 ...
+B(11) (2048) 0x49 0x27 0xe4 0x3f 0xf3 0x48 0x7b 0xbf 0x9c 0x5d 0xd1 0x3e 0x89 0xc4 0x3d 0x40 ...
+B(12) (2048) 0xe4 0xc7 0x10 0x3e 0x88 0xce 0x6c 0x3d 0xdf 0x58 0x3b 0xc0 00 0xc5 0x80 0xbb ...
+B(13) (2048) 0x7f 0x5b 0xa8 0x3f 0xf0 0xe2 0x1a 0xbf 0xa5 0x2c 0xe1 0x3f 0xc3 0x28 0x16 0x40 ...
+B(14) (1024) 0x10 0x20 0x55 0xbc 0x68 0x87 0x6 0xbe 00 0x6c 0x7e 0xbb 0xd2 0x7b 0xc1 0x40 ...
+B(15) (1024) 0xc8 0x5a 0xc9 0xbf 0xea 0xaa 0xd2 0xbf 0x93 0x50 0x91 0x40 0xf0 0x45 0x80 0x3c ...
+B(16) (1024) 0x62 0xa4 0x5a 0x40 0x4a 0x35 0x68 0x3f 0xe5 0x13 0x4c 0x40 0xa5 0x61 0x9 0x3f ...
+B(17) (512) 0x2f 0x92 0x3d 0x40 0xd6 0x5 0x9 0xc0 0x1c 0xa0 0x91 0x40 00 0x75 0xb2 0xbd ...
+B(18) (512) 0x1d 0x43 0x10 0x40 0xc6 0x30 0x92 0x3f 0xc8 0x1a 0xce 0xbf 0xa7 0x61 0x9 0xc1 ...
+B(19) (512) 0x17 0xa8 0x75 0x40 0x60 0xd7 0x4f 0xbd 0xd7 0xef 0x1 0xbd 0x92 0xac 0xad 0x40 ...
+B(20) (512) 0xc1 0xff 0xd0 0x40 0x7c 0xd8 0x18 0xbf 0xd0 0xd9 0x91 0x3f 0x58 0x5a 0xf 0xbf ...
+B(21) (256) 0x30 0x4c 0xd3 0xc0 0xc3 0x4c 0xc 0x40 0xb4 0xdb 0xa9 0xc1 0x4b 0x20 00 0x40 ...
+B(22) (128) 0xee 0xf3 0xe8 0xbe 0x44 0xda 0xd5 0xbd 0xcb 0x16 0x1a 0x40 0xec 0xf4 0x48 0x3f ...
+B(23) (128) 0x9a 0xe0 0xea 0xbe 0xba 0x9c 0xb5 0x3e 0xa5 0x3e 0xa 0x40 0x43 0x5f 0xc1 0xbf ...
+B(24) (0) 
+B(25) (0) 
+B(26) (0) 
+B(27) (2048) 0xee 0x67 0x12 0xbf 0x24 0xd6 0x1e 0x40 0x5b 0x99 0xec 0xbe 0xbd 0x11 0xba 0xc0 ...
+B(28) (0) 
+B(29) (0) 
+B(30) (0) 
+B(31) (0) 
+B(32) (1024) 0xa9 0x28 0x33 0x40 0xe0 0x73 0x78 0xbe 0x94 0x9e 0xe2 0x3e 0x84 0x6d 0x65 0x3f ...
+B(33) (0) 
+B(34) (0) 
+B(35) (0) 
+B(36) (0) 
+B(37) (18432) 0xe9 0xcb 0xfc 0xbd 0x88 0x9c 0x25 0xbe 0x81 0x5a 0x81 0x3e 0x34 0x79 0xe1 0x3e ...
+B(38) (0) 
+B(39) (4100096) 0x7c 0x5b 0x26 0xbb 0x90 0x80 0xa 0xbb 0xf0 0x4b 0x2e 0xbb 0x59 0xff 0x33 0xbb ...
+B(40) (1048576) 0x51 0xd1 0x13 0x3c 0xd0 0xb5 0x52 0x3d 0xf6 0x89 0xb0 0x3b 0xc7 0x60 0x64 0xbc ...
+B(41) (0) 
+B(42) (18432) 0xf6 0xb6 0x51 0x3d 0x45 0xdb 0x5b 0x3f 0x68 0x40 0x21 0xbd 0x3e 0xd5 0xa0 0x3d ...
+B(43) (0) 
+B(44) (1048576) 0xcc 0xad 0xaa 0xbb 0x24 0x28 0x5 0x3c 0xfa 0x2f 0xa3 0xbc 0x36 0xf0 0x85 0x3c ...
+B(45) (8192) 0x3a 0x18 0x96 0x29 0x6f 0x4f 0x21 0xbd 0xcc 0x8b 0xc5 0xbc 0x79 0x32 0x14 0x3a ...
+B(46) (256) 0x4e 0x2a 0xe9 0x3f 0xce 0x8e 0x89 0x40 0xfa 0x35 0xfc 0x3f 0x72 0x2f 0xbe 0x3e ...
+B(47) (1048576) 0x6b 0x35 0xf2 0xbc 0x44 0xb4 0x16 0xbd 0xdb 0xeb 0xe0 0x3d 0xf2 0x64 0x2c 0xbd ...
+B(48) (2048) 0x34 0xea 0x64 0x3f 0xa0 0x89 0x91 0x3c 0xbe 0x77 0x82 0x3f 0xb8 0xb1 0xc1 0xbf ...
+B(49) (1048576) 0xe5 0x54 0x96 0x3c 0xcd 0xfe 0x7e 0xbc 0x6 0x8c 0x33 0x3d 0xa5 0x40 0xbf 0xbc ...
+B(50) (18432) 0xeb 0x64 0x92 0xbd 0x56 0x2 0x43 0x3c 0x83 0x9b 0x11 0xbf 0x76 0x91 0xc6 0x3d ...
+B(51) (0) 
+B(52) (262144) 0x70 0x12 0x55 0xbc 0x99 0xb7 0xa2 0x3d 0x90 0x8c 0xdc 0xbd 0x1b 0x8a 0xd4 0x3d ...
+B(53) (1152) 0x67 0x97 0xcc 0xc1 0x5a 0xc 0x36 0xbe 0x73 0xb4 0x48 0xbf 0xcb 0x65 0x29 0x3f ...
+B(54) (524288) 0xa4 0x60 0x4f 0x3c 0x17 0xa9 0x1 0x3d 0x35 0x9c 0xd9 0x3b 0xf9 0xf2 0xd1 0x3c ...
+B(55) (3456) 0x48 0x99 0x3f 0x2c 0x1b 0x7b 0x63 0x2c 0x6 0xbe 0x27 0x2c 0xff 0x53 0x24 0x2c ...
+B(56) (2048) 0xe5 0x1f 0x26 0x40 0x16 0x84 0x4e 0xbf 0x4a 0x4a 0x3e 0x40 0x9f 0xc2 0xe1 0x3f ...
+B(57) (9216) 0x27 0xb1 0x17 0x3f 0x1b 0xc2 0x4b 0x3e 0xc6 0x76 0xe 0x3f 0x44 0xc2 0x52 0xbe ...
+B(58) (131072) 0x1 0x7d 0xe7 0x3c 0xaf 0x21 0xf6 0x3c 0x4b 0x9a 0x7e 0x3c 0x76 0x39 0x1e 0xbe ...
+B(59) (32768) 0xe6 0xc6 0x31 0xbe 0x47 0x80 0x7 0x3c 0x16 0xa3 0x2a 0x3a 0xc6 0x6c 0xbe 0xbc ...
+B(60) (2304) 0xc9 0xd4 0xfd 0xbd 0xf9 0x8c 0x3a 0xbe 0xa3 0x9a 0x96 0xbd 0x9b 0x6d 0xb0 0x3f ...
+B(61) (0) 
+B(62) (65536) 0xd6 0xe0 0x4e 0xbc 0x54 0xf7 0x5f 0x3d 0xd3 0x59 0x59 0x3e 0xa6 0xf4 0x34 0xbd ...
+B(63) (4608) 0xdf 0x9b 0x83 0xbd 0xd7 0x63 0x5a 0x3d 0x60 0x59 0x2f 0xbe 0x71 0x7b 0xe1 0xbc ...
+B(64) (0) 
+B(65) (9216) 0x22 0x41 0xa9 0xbe 0x15 0xa 0x11 0x3e 0xcc 0x5 0x50 0xbf 0x89 0xa6 0x1d 0x3d ...
+B(66) (0) 
+B(67) (0) 
+B(68) (8) 0xff 0xff 0xff 0xff 0xe9 0x3 00 00 ...
+B(69) (0) 
+B(70) (18432) 0xf2 0x25 0x58 0xbc 0x14 0xea 0xa2 0x3e 0xa8 0x10 0x9a 0x3d 0xb 0x5f 0xb0 0x3e ...
+B(71) (36864) 0xa0 0xf2 0xdf 0xbe 0x72 0xc7 0x8 0xbf 0xd6 0x15 0x1b 0xbf 0xca 0x96 0x5 0xbf ...
+B(72) (1048576) 0xc9 0x6a 0xab 0x3b 0x69 0xea 0xac 0xbc 0x8e 0xa6 0x3b 0x3e 0x2b 0x88 0xa9 0x3c ...
+B(73) (0) 
+B(74) (2097152) 0xb3 0x1b 0xe 0x3e 0x55 0x3c 0xa2 0xbd 0x9b 0x29 0x5e 0xbd 0x2e 0xb3 0x4a 0xbe ...
+B(75) (0) 
+B(76) (0) 
+B(77) (0) 
+B(78) (0) 
+B(79) (0) 
+B(80) (0) 
+B(81) (18432) 0xa2 0x97 0x34 0xbe 0x5c 0x89 0x26 0xbd 0x72 0xbb 0xb3 0xbd 0x87 0xe0 0x19 0xbe ...
+B(82) (4608) 0xfe 0x1e 0xc8 0x3d 0x2a 0x98 0xe8 0x3d 0x38 0x9c 0x9a 0xbe 0x6b 0x11 0xbd 0x3d ...
+B(83) (0) 
+B(84) (4194304) 0xf9 0xc0 0xc2 0x3d 0xba 0x83 0x8a 0xbe 0xfd 0xd0 0x7c 0x3c 0xf1 0x11 0x3a 0xbe ...
+B(85) (0) 
+B(86) (0) 
+B(87) (18432) 0x25 0x16 0x48 0x3f 0xb8 0xd2 0x50 0xbe 0x7a 0x3f 0x3d 0x3e 0x90 0xc2 0x32 0xbd ...
+B(88) (0) 
+B(89) (0) 
+
+-------------------------------------------------------------------
+Sub-Graph: #0 (noname)
+
+Data Format:
+CHANNEL_LAST (NHWC for 2d, NDHWC for 3d data)
+
+Operands: T(subgraph index : tensor index) TYPE (shape) (shape_signature) B(buffer index) (variable) OperandName
+T(0:0) FLOAT32 (32, 3, 3, 3) B(55) MobilenetV1/Conv2d_0/weights
+
+T(0:1) FLOAT32 (1, 3, 3, 512) B(81) MobilenetV1/Conv2d_10_depthwise/depthwise_weights
+
+T(0:2) FLOAT32 (512, 1, 1, 512) B(44) MobilenetV1/Conv2d_10_pointwise/weights
+
+T(0:3) FLOAT32 (1, 3, 3, 512) B(42) MobilenetV1/Conv2d_11_depthwise/depthwise_weights
+
+T(0:4) FLOAT32 (512, 1, 1, 512) B(72) MobilenetV1/Conv2d_11_pointwise/weights
+
+T(0:5) FLOAT32 (1, 3, 3, 512) B(37) MobilenetV1/Conv2d_12_depthwise/depthwise_weights
+
+T(0:6) FLOAT32 (1024, 1, 1, 512) B(74) MobilenetV1/Conv2d_12_pointwise/weights
+
+T(0:7) FLOAT32 (1, 3, 3, 1024) B(71) MobilenetV1/Conv2d_13_depthwise/depthwise_weights
+
+T(0:8) FLOAT32 (1024, 1, 1, 1024) B(84) MobilenetV1/Conv2d_13_pointwise/weights
+
+T(0:9) FLOAT32 (1, 3, 3, 32) B(53) MobilenetV1/Conv2d_1_depthwise/depthwise_weights
+
+T(0:10) FLOAT32 (64, 1, 1, 32) B(45) MobilenetV1/Conv2d_1_pointwise/weights
+
+T(0:11) FLOAT32 (1, 3, 3, 64) B(60) MobilenetV1/Conv2d_2_depthwise/depthwise_weights
+
+T(0:12) FLOAT32 (128, 1, 1, 64) B(59) MobilenetV1/Conv2d_2_pointwise/weights
+
+T(0:13) FLOAT32 (1, 3, 3, 128) B(63) MobilenetV1/Conv2d_3_depthwise/depthwise_weights
+
+T(0:14) FLOAT32 (128, 1, 1, 128) B(62) MobilenetV1/Conv2d_3_pointwise/weights
+
+T(0:15) FLOAT32 (1, 3, 3, 128) B(82) MobilenetV1/Conv2d_4_depthwise/depthwise_weights
+
+T(0:16) FLOAT32 (256, 1, 1, 128) B(58) MobilenetV1/Conv2d_4_pointwise/weights
+
+T(0:17) FLOAT32 (1, 3, 3, 256) B(65) MobilenetV1/Conv2d_5_depthwise/depthwise_weights
+
+T(0:18) FLOAT32 (256, 1, 1, 256) B(52) MobilenetV1/Conv2d_5_pointwise/weights
+
+T(0:19) FLOAT32 (1, 3, 3, 256) B(57) MobilenetV1/Conv2d_6_depthwise/depthwise_weights
+
+T(0:20) FLOAT32 (512, 1, 1, 256) B(54) MobilenetV1/Conv2d_6_pointwise/weights
+
+T(0:21) FLOAT32 (1, 3, 3, 512) B(50) MobilenetV1/Conv2d_7_depthwise/depthwise_weights
+
+T(0:22) FLOAT32 (512, 1, 1, 512) B(40) MobilenetV1/Conv2d_7_pointwise/weights
+
+T(0:23) FLOAT32 (1, 3, 3, 512) B(70) MobilenetV1/Conv2d_8_depthwise/depthwise_weights
+
+T(0:24) FLOAT32 (512, 1, 1, 512) B(49) MobilenetV1/Conv2d_8_pointwise/weights
+
+T(0:25) FLOAT32 (1, 3, 3, 512) B(87) MobilenetV1/Conv2d_9_depthwise/depthwise_weights
+
+T(0:26) FLOAT32 (512, 1, 1, 512) B(47) MobilenetV1/Conv2d_9_pointwise/weights
+
+T(0:27) FLOAT32 (1, 1, 1, 1024) B(30) MobilenetV1/Logits/AvgPool_1a/AvgPool
+
+T(0:28) FLOAT32 (1, 1, 1, 1001) B(26) MobilenetV1/Logits/Conv2d_1c_1x1/BiasAdd
+
+T(0:29) FLOAT32 (1001) B(1) MobilenetV1/Logits/Conv2d_1c_1x1/convolution_bias
+
+T(0:30) FLOAT32 (1001, 1, 1, 1024) B(39) MobilenetV1/Logits/Conv2d_1c_1x1/weights
+
+T(0:31) FLOAT32 (1, 112, 112, 32) B(41) MobilenetV1/MobilenetV1/Conv2d_0/Relu6
+
+T(0:32) FLOAT32 (32) B(23) MobilenetV1/MobilenetV1/Conv2d_0/convolution_bias
+
+T(0:33) FLOAT32 (1, 14, 14, 512) B(33) MobilenetV1/MobilenetV1/Conv2d_10_depthwise/Relu6
+
+T(0:34) FLOAT32 (512) B(8) MobilenetV1/MobilenetV1/Conv2d_10_depthwise/depthwise_bias
+
+T(0:35) FLOAT32 (1, 14, 14, 512) B(78) MobilenetV1/MobilenetV1/Conv2d_10_pointwise/Relu6
+
+T(0:36) FLOAT32 (512) B(56) MobilenetV1/MobilenetV1/Conv2d_10_pointwise/convolution_bias
+
+T(0:37) FLOAT32 (1, 14, 14, 512) B(38) MobilenetV1/MobilenetV1/Conv2d_11_depthwise/Relu6
+
+T(0:38) FLOAT32 (512) B(7) MobilenetV1/MobilenetV1/Conv2d_11_depthwise/depthwise_bias
+
+T(0:39) FLOAT32 (1, 14, 14, 512) B(43) MobilenetV1/MobilenetV1/Conv2d_11_pointwise/Relu6
+
+T(0:40) FLOAT32 (512) B(6) MobilenetV1/MobilenetV1/Conv2d_11_pointwise/convolution_bias
+
+T(0:41) FLOAT32 (1, 7, 7, 512) B(31) MobilenetV1/MobilenetV1/Conv2d_12_depthwise/Relu6
+
+T(0:42) FLOAT32 (512) B(5) MobilenetV1/MobilenetV1/Conv2d_12_depthwise/depthwise_bias
+
+T(0:43) FLOAT32 (1, 7, 7, 1024) B(36) MobilenetV1/MobilenetV1/Conv2d_12_pointwise/Relu6
+
+T(0:44) FLOAT32 (1024) B(4) MobilenetV1/MobilenetV1/Conv2d_12_pointwise/convolution_bias
+
+T(0:45) FLOAT32 (1, 7, 7, 1024) B(28) MobilenetV1/MobilenetV1/Conv2d_13_depthwise/Relu6
+
+T(0:46) FLOAT32 (1024) B(3) MobilenetV1/MobilenetV1/Conv2d_13_depthwise/depthwise_bias
+
+T(0:47) FLOAT32 (1, 7, 7, 1024) B(29) MobilenetV1/MobilenetV1/Conv2d_13_pointwise/Relu6
+
+T(0:48) FLOAT32 (1024) B(2) MobilenetV1/MobilenetV1/Conv2d_13_pointwise/convolution_bias
+
+T(0:49) FLOAT32 (1, 112, 112, 32) B(61) MobilenetV1/MobilenetV1/Conv2d_1_depthwise/Relu6
+
+T(0:50) FLOAT32 (32) B(22) MobilenetV1/MobilenetV1/Conv2d_1_depthwise/depthwise_bias
+
+T(0:51) FLOAT32 (1, 112, 112, 64) B(51) MobilenetV1/MobilenetV1/Conv2d_1_pointwise/Relu6
+
+T(0:52) FLOAT32 (64) B(21) MobilenetV1/MobilenetV1/Conv2d_1_pointwise/convolution_bias
+
+T(0:53) FLOAT32 (1, 56, 56, 64) B(67) MobilenetV1/MobilenetV1/Conv2d_2_depthwise/Relu6
+
+T(0:54) FLOAT32 (64) B(46) MobilenetV1/MobilenetV1/Conv2d_2_depthwise/depthwise_bias
+
+T(0:55) FLOAT32 (1, 56, 56, 128) B(73) MobilenetV1/MobilenetV1/Conv2d_2_pointwise/Relu6
+
+T(0:56) FLOAT32 (128) B(20) MobilenetV1/MobilenetV1/Conv2d_2_pointwise/convolution_bias
+
+T(0:57) FLOAT32 (1, 56, 56, 128) B(75) MobilenetV1/MobilenetV1/Conv2d_3_depthwise/Relu6
+
+T(0:58) FLOAT32 (128) B(19) MobilenetV1/MobilenetV1/Conv2d_3_depthwise/depthwise_bias
+
+T(0:59) FLOAT32 (1, 56, 56, 128) B(79) MobilenetV1/MobilenetV1/Conv2d_3_pointwise/Relu6
+
+T(0:60) FLOAT32 (128) B(18) MobilenetV1/MobilenetV1/Conv2d_3_pointwise/convolution_bias
+
+T(0:61) FLOAT32 (1, 28, 28, 128) B(80) MobilenetV1/MobilenetV1/Conv2d_4_depthwise/Relu6
+
+T(0:62) FLOAT32 (128) B(17) MobilenetV1/MobilenetV1/Conv2d_4_depthwise/depthwise_bias
+
+T(0:63) FLOAT32 (1, 28, 28, 256) B(64) MobilenetV1/MobilenetV1/Conv2d_4_pointwise/Relu6
+
+T(0:64) FLOAT32 (256) B(16) MobilenetV1/MobilenetV1/Conv2d_4_pointwise/convolution_bias
+
+T(0:65) FLOAT32 (1, 28, 28, 256) B(83) MobilenetV1/MobilenetV1/Conv2d_5_depthwise/Relu6
+
+T(0:66) FLOAT32 (256) B(15) MobilenetV1/MobilenetV1/Conv2d_5_depthwise/depthwise_bias
+
+T(0:67) FLOAT32 (1, 28, 28, 256) B(85) MobilenetV1/MobilenetV1/Conv2d_5_pointwise/Relu6
+
+T(0:68) FLOAT32 (256) B(32) MobilenetV1/MobilenetV1/Conv2d_5_pointwise/convolution_bias
+
+T(0:69) FLOAT32 (1, 14, 14, 256) B(86) MobilenetV1/MobilenetV1/Conv2d_6_depthwise/Relu6
+
+T(0:70) FLOAT32 (256) B(14) MobilenetV1/MobilenetV1/Conv2d_6_depthwise/depthwise_bias
+
+T(0:71) FLOAT32 (1, 14, 14, 512) B(76) MobilenetV1/MobilenetV1/Conv2d_6_pointwise/Relu6
+
+T(0:72) FLOAT32 (512) B(13) MobilenetV1/MobilenetV1/Conv2d_6_pointwise/convolution_bias
+
+T(0:73) FLOAT32 (1, 14, 14, 512) B(69) MobilenetV1/MobilenetV1/Conv2d_7_depthwise/Relu6
+
+T(0:74) FLOAT32 (512) B(12) MobilenetV1/MobilenetV1/Conv2d_7_depthwise/depthwise_bias
+
+T(0:75) FLOAT32 (1, 14, 14, 512) B(89) MobilenetV1/MobilenetV1/Conv2d_7_pointwise/Relu6
+
+T(0:76) FLOAT32 (512) B(11) MobilenetV1/MobilenetV1/Conv2d_7_pointwise/convolution_bias
+
+T(0:77) FLOAT32 (1, 14, 14, 512) B(77) MobilenetV1/MobilenetV1/Conv2d_8_depthwise/Relu6
+
+T(0:78) FLOAT32 (512) B(27) MobilenetV1/MobilenetV1/Conv2d_8_depthwise/depthwise_bias
+
+T(0:79) FLOAT32 (1, 14, 14, 512) B(35) MobilenetV1/MobilenetV1/Conv2d_8_pointwise/Relu6
+
+T(0:80) FLOAT32 (512) B(10) MobilenetV1/MobilenetV1/Conv2d_8_pointwise/convolution_bias
+
+T(0:81) FLOAT32 (1, 14, 14, 512) B(66) MobilenetV1/MobilenetV1/Conv2d_9_depthwise/Relu6
+
+T(0:82) FLOAT32 (512) B(48) MobilenetV1/MobilenetV1/Conv2d_9_depthwise/depthwise_bias
+
+T(0:83) FLOAT32 (1, 14, 14, 512) B(34) MobilenetV1/MobilenetV1/Conv2d_9_pointwise/Relu6
+
+T(0:84) FLOAT32 (512) B(9) MobilenetV1/MobilenetV1/Conv2d_9_pointwise/convolution_bias
+
+T(0:85) FLOAT32 (1, 1001) B(25) MobilenetV1/Predictions/Reshape
+
+T(0:86) INT32 (2) B(68) MobilenetV1/Predictions/Reshape/shape
+
+T(0:87) FLOAT32 (1, 1001) B(24) MobilenetV1/Predictions/Reshape_1
+
+T(0:88) FLOAT32 (1, 224, 224, 3) B(88) input
+    Quantization: min(0) max(255) quantized_dimension(0)
+
+Operators: O(subgraph index : operator index) OpCodeName 
+    Option(values) ... <-- depending on OpCode
+    I T(tensor index) OperandName <-- as input
+    O T(tensor index) OperandName <-- as output
+O(0:0) CONV_2D 
+    Padding(0) Stride.W(2) Stride.H(2) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:88) input
+    I T(0:0) MobilenetV1/Conv2d_0/weights
+    I T(0:32) MobilenetV1/MobilenetV1/Conv2d_0/convolution_bias
+    O T(0:31) MobilenetV1/MobilenetV1/Conv2d_0/Relu6
+O(0:1) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:31) MobilenetV1/MobilenetV1/Conv2d_0/Relu6
+    I T(0:9) MobilenetV1/Conv2d_1_depthwise/depthwise_weights
+    I T(0:50) MobilenetV1/MobilenetV1/Conv2d_1_depthwise/depthwise_bias
+    O T(0:49) MobilenetV1/MobilenetV1/Conv2d_1_depthwise/Relu6
+O(0:2) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:49) MobilenetV1/MobilenetV1/Conv2d_1_depthwise/Relu6
+    I T(0:10) MobilenetV1/Conv2d_1_pointwise/weights
+    I T(0:52) MobilenetV1/MobilenetV1/Conv2d_1_pointwise/convolution_bias
+    O T(0:51) MobilenetV1/MobilenetV1/Conv2d_1_pointwise/Relu6
+O(0:3) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(2) Stride.H(2) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:51) MobilenetV1/MobilenetV1/Conv2d_1_pointwise/Relu6
+    I T(0:11) MobilenetV1/Conv2d_2_depthwise/depthwise_weights
+    I T(0:54) MobilenetV1/MobilenetV1/Conv2d_2_depthwise/depthwise_bias
+    O T(0:53) MobilenetV1/MobilenetV1/Conv2d_2_depthwise/Relu6
+O(0:4) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:53) MobilenetV1/MobilenetV1/Conv2d_2_depthwise/Relu6
+    I T(0:12) MobilenetV1/Conv2d_2_pointwise/weights
+    I T(0:56) MobilenetV1/MobilenetV1/Conv2d_2_pointwise/convolution_bias
+    O T(0:55) MobilenetV1/MobilenetV1/Conv2d_2_pointwise/Relu6
+O(0:5) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:55) MobilenetV1/MobilenetV1/Conv2d_2_pointwise/Relu6
+    I T(0:13) MobilenetV1/Conv2d_3_depthwise/depthwise_weights
+    I T(0:58) MobilenetV1/MobilenetV1/Conv2d_3_depthwise/depthwise_bias
+    O T(0:57) MobilenetV1/MobilenetV1/Conv2d_3_depthwise/Relu6
+O(0:6) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:57) MobilenetV1/MobilenetV1/Conv2d_3_depthwise/Relu6
+    I T(0:14) MobilenetV1/Conv2d_3_pointwise/weights
+    I T(0:60) MobilenetV1/MobilenetV1/Conv2d_3_pointwise/convolution_bias
+    O T(0:59) MobilenetV1/MobilenetV1/Conv2d_3_pointwise/Relu6
+O(0:7) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(2) Stride.H(2) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:59) MobilenetV1/MobilenetV1/Conv2d_3_pointwise/Relu6
+    I T(0:15) MobilenetV1/Conv2d_4_depthwise/depthwise_weights
+    I T(0:62) MobilenetV1/MobilenetV1/Conv2d_4_depthwise/depthwise_bias
+    O T(0:61) MobilenetV1/MobilenetV1/Conv2d_4_depthwise/Relu6
+O(0:8) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:61) MobilenetV1/MobilenetV1/Conv2d_4_depthwise/Relu6
+    I T(0:16) MobilenetV1/Conv2d_4_pointwise/weights
+    I T(0:64) MobilenetV1/MobilenetV1/Conv2d_4_pointwise/convolution_bias
+    O T(0:63) MobilenetV1/MobilenetV1/Conv2d_4_pointwise/Relu6
+O(0:9) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:63) MobilenetV1/MobilenetV1/Conv2d_4_pointwise/Relu6
+    I T(0:17) MobilenetV1/Conv2d_5_depthwise/depthwise_weights
+    I T(0:66) MobilenetV1/MobilenetV1/Conv2d_5_depthwise/depthwise_bias
+    O T(0:65) MobilenetV1/MobilenetV1/Conv2d_5_depthwise/Relu6
+O(0:10) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:65) MobilenetV1/MobilenetV1/Conv2d_5_depthwise/Relu6
+    I T(0:18) MobilenetV1/Conv2d_5_pointwise/weights
+    I T(0:68) MobilenetV1/MobilenetV1/Conv2d_5_pointwise/convolution_bias
+    O T(0:67) MobilenetV1/MobilenetV1/Conv2d_5_pointwise/Relu6
+O(0:11) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(2) Stride.H(2) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:67) MobilenetV1/MobilenetV1/Conv2d_5_pointwise/Relu6
+    I T(0:19) MobilenetV1/Conv2d_6_depthwise/depthwise_weights
+    I T(0:70) MobilenetV1/MobilenetV1/Conv2d_6_depthwise/depthwise_bias
+    O T(0:69) MobilenetV1/MobilenetV1/Conv2d_6_depthwise/Relu6
+O(0:12) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:69) MobilenetV1/MobilenetV1/Conv2d_6_depthwise/Relu6
+    I T(0:20) MobilenetV1/Conv2d_6_pointwise/weights
+    I T(0:72) MobilenetV1/MobilenetV1/Conv2d_6_pointwise/convolution_bias
+    O T(0:71) MobilenetV1/MobilenetV1/Conv2d_6_pointwise/Relu6
+O(0:13) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:71) MobilenetV1/MobilenetV1/Conv2d_6_pointwise/Relu6
+    I T(0:21) MobilenetV1/Conv2d_7_depthwise/depthwise_weights
+    I T(0:74) MobilenetV1/MobilenetV1/Conv2d_7_depthwise/depthwise_bias
+    O T(0:73) MobilenetV1/MobilenetV1/Conv2d_7_depthwise/Relu6
+O(0:14) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:73) MobilenetV1/MobilenetV1/Conv2d_7_depthwise/Relu6
+    I T(0:22) MobilenetV1/Conv2d_7_pointwise/weights
+    I T(0:76) MobilenetV1/MobilenetV1/Conv2d_7_pointwise/convolution_bias
+    O T(0:75) MobilenetV1/MobilenetV1/Conv2d_7_pointwise/Relu6
+O(0:15) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:75) MobilenetV1/MobilenetV1/Conv2d_7_pointwise/Relu6
+    I T(0:23) MobilenetV1/Conv2d_8_depthwise/depthwise_weights
+    I T(0:78) MobilenetV1/MobilenetV1/Conv2d_8_depthwise/depthwise_bias
+    O T(0:77) MobilenetV1/MobilenetV1/Conv2d_8_depthwise/Relu6
+O(0:16) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:77) MobilenetV1/MobilenetV1/Conv2d_8_depthwise/Relu6
+    I T(0:24) MobilenetV1/Conv2d_8_pointwise/weights
+    I T(0:80) MobilenetV1/MobilenetV1/Conv2d_8_pointwise/convolution_bias
+    O T(0:79) MobilenetV1/MobilenetV1/Conv2d_8_pointwise/Relu6
+O(0:17) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:79) MobilenetV1/MobilenetV1/Conv2d_8_pointwise/Relu6
+    I T(0:25) MobilenetV1/Conv2d_9_depthwise/depthwise_weights
+    I T(0:82) MobilenetV1/MobilenetV1/Conv2d_9_depthwise/depthwise_bias
+    O T(0:81) MobilenetV1/MobilenetV1/Conv2d_9_depthwise/Relu6
+O(0:18) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:81) MobilenetV1/MobilenetV1/Conv2d_9_depthwise/Relu6
+    I T(0:26) MobilenetV1/Conv2d_9_pointwise/weights
+    I T(0:84) MobilenetV1/MobilenetV1/Conv2d_9_pointwise/convolution_bias
+    O T(0:83) MobilenetV1/MobilenetV1/Conv2d_9_pointwise/Relu6
+O(0:19) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:83) MobilenetV1/MobilenetV1/Conv2d_9_pointwise/Relu6
+    I T(0:1) MobilenetV1/Conv2d_10_depthwise/depthwise_weights
+    I T(0:34) MobilenetV1/MobilenetV1/Conv2d_10_depthwise/depthwise_bias
+    O T(0:33) MobilenetV1/MobilenetV1/Conv2d_10_depthwise/Relu6
+O(0:20) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:33) MobilenetV1/MobilenetV1/Conv2d_10_depthwise/Relu6
+    I T(0:2) MobilenetV1/Conv2d_10_pointwise/weights
+    I T(0:36) MobilenetV1/MobilenetV1/Conv2d_10_pointwise/convolution_bias
+    O T(0:35) MobilenetV1/MobilenetV1/Conv2d_10_pointwise/Relu6
+O(0:21) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:35) MobilenetV1/MobilenetV1/Conv2d_10_pointwise/Relu6
+    I T(0:3) MobilenetV1/Conv2d_11_depthwise/depthwise_weights
+    I T(0:38) MobilenetV1/MobilenetV1/Conv2d_11_depthwise/depthwise_bias
+    O T(0:37) MobilenetV1/MobilenetV1/Conv2d_11_depthwise/Relu6
+O(0:22) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:37) MobilenetV1/MobilenetV1/Conv2d_11_depthwise/Relu6
+    I T(0:4) MobilenetV1/Conv2d_11_pointwise/weights
+    I T(0:40) MobilenetV1/MobilenetV1/Conv2d_11_pointwise/convolution_bias
+    O T(0:39) MobilenetV1/MobilenetV1/Conv2d_11_pointwise/Relu6
+O(0:23) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(2) Stride.H(2) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:39) MobilenetV1/MobilenetV1/Conv2d_11_pointwise/Relu6
+    I T(0:5) MobilenetV1/Conv2d_12_depthwise/depthwise_weights
+    I T(0:42) MobilenetV1/MobilenetV1/Conv2d_12_depthwise/depthwise_bias
+    O T(0:41) MobilenetV1/MobilenetV1/Conv2d_12_depthwise/Relu6
+O(0:24) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:41) MobilenetV1/MobilenetV1/Conv2d_12_depthwise/Relu6
+    I T(0:6) MobilenetV1/Conv2d_12_pointwise/weights
+    I T(0:44) MobilenetV1/MobilenetV1/Conv2d_12_pointwise/convolution_bias
+    O T(0:43) MobilenetV1/MobilenetV1/Conv2d_12_pointwise/Relu6
+O(0:25) DEPTHWISE_CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) DepthMultiplier(1) Dilation.W(1) Dilation.H(1) Activation(RELU6) 
+    I T(0:43) MobilenetV1/MobilenetV1/Conv2d_12_pointwise/Relu6
+    I T(0:7) MobilenetV1/Conv2d_13_depthwise/depthwise_weights
+    I T(0:46) MobilenetV1/MobilenetV1/Conv2d_13_depthwise/depthwise_bias
+    O T(0:45) MobilenetV1/MobilenetV1/Conv2d_13_depthwise/Relu6
+O(0:26) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(RELU6)
+    I T(0:45) MobilenetV1/MobilenetV1/Conv2d_13_depthwise/Relu6
+    I T(0:8) MobilenetV1/Conv2d_13_pointwise/weights
+    I T(0:48) MobilenetV1/MobilenetV1/Conv2d_13_pointwise/convolution_bias
+    O T(0:47) MobilenetV1/MobilenetV1/Conv2d_13_pointwise/Relu6
+O(0:27) AVERAGE_POOL_2D 
+    Padding(1) Stride.W(2) Stride.H(2) Filter.W(7) Filter.H(7) Activation(NONE)
+    I T(0:47) MobilenetV1/MobilenetV1/Conv2d_13_pointwise/Relu6
+    O T(0:27) MobilenetV1/Logits/AvgPool_1a/AvgPool
+O(0:28) CONV_2D 
+    Padding(0) Stride.W(1) Stride.H(1) Dilation.W(1) Dilation.H(1) Activation(NONE)
+    I T(0:27) MobilenetV1/Logits/AvgPool_1a/AvgPool
+    I T(0:30) MobilenetV1/Logits/Conv2d_1c_1x1/weights
+    I T(0:29) MobilenetV1/Logits/Conv2d_1c_1x1/convolution_bias
+    O T(0:28) MobilenetV1/Logits/Conv2d_1c_1x1/BiasAdd
+O(0:29) RESHAPE 
+    NewShape(-1, 1001)
+    I T(0:28) MobilenetV1/Logits/Conv2d_1c_1x1/BiasAdd
+    I T(0:86) MobilenetV1/Predictions/Reshape/shape
+    O T(0:85) MobilenetV1/Predictions/Reshape
+O(0:30) SOFTMAX 
+    Beta(1)
+    I T(0:85) MobilenetV1/Predictions/Reshape
+    O T(0:87) MobilenetV1/Predictions/Reshape_1
+
+Inputs/Outputs: I(input)/O(output) T(tensor index) OperandName
+I T(0:88) input
+O T(0:87) MobilenetV1/Predictions/Reshape_1
+
+===================================================================
+
