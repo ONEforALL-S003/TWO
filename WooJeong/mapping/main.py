@@ -16,7 +16,7 @@ model = torch.hub.load("pytorch/vision:v0.14.1", "mobilenet_v2",  pretrained=Tru
 input = torch.randn(1, 3, 244, 244)
 print(model)
 
-mapper = Torch2CircleMapper(original_model=model, sample_input=input, dir_path='preserve2')
+mapper = Torch2CircleMapper(original_model=model, sample_input=input, dir_path='preserve')
 mapping, data = mapper.get_mapped_dict()
 
 model.eval()
@@ -25,6 +25,6 @@ p_model = torch.quantization.prepare(model)
 p_model(input)
 quant = torch.quantization.convert(p_model)
 
-extractor = TorchExtractor(quant, json_path='preserve2/qparam.json', partial_graph_data=data)
+extractor = TorchExtractor(quant, json_path='preserve/qparam.json', partial_graph_data=data)
 extractor.generate_files(mapping)
 print(1)

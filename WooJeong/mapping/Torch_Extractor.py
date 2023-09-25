@@ -190,8 +190,51 @@ class TorchExtractor:
                     'value': self.__save_np(np.zeros(shape=shape, dtype=np.int32))
                 }
 
+
+        q_dtype= self.qdtype_mapping[self.__input_dtype]
+        q_dtype, dtype = q_dtype['np'], q_dtype['str']
         for name, layer in graph_data.items():
-            dtype = self.qdtype_mapping[self.__input_dtype]['str']
+            if 'running_mean' in layer and 'running_var' in layer:
+                if 'scale' not in layer or 'zero_point' not in layer:
+                    continue
+                scale = layer['scale'].numpy()
+                s_np = self.__save_np(scale)
+                zero_point = layer['zero_point'].numpy()
+                z_np = self.__save_np(zero_point)
+
+                weight = quantize_tensor(layer['weight'], scale=scale, zero_point=zero_point, dtype=q_dtype)
+                w_name = name + '.weight'
+                if w_name in mapping:
+                    data = mapped_data
+                    w_name = mapping[w_name]
+                else:
+                    data = not_mapped_data
+
+                data[w_name] = {
+                    'scale': s_np,
+                    'zerop': z_np,
+                    'quantized_dimension': 0,
+                    'dtype': dtype,
+                    'value': self.__save_np(weight)
+                }
+
+                bias = quantize_tensor(layer['bias'], scale=scale, zero_point=zero_point, dtype=q_dtype)
+                b_name = name + '.bias'
+                if b_name in mapping:
+                    data = mapped_data
+                    b_name = mapping[b_name]
+                else:
+                    data = not_mapped_data
+
+                data[b_name] = {
+                    'scale': s_np,
+                    'zerop': z_np,
+                    'quantized_dimension': 0,
+                    'dtype': dtype,
+                    'value': self.__save_np(weight)
+                }
+                continue
+
             if "weight" in layer:
                 w_name = name + '.weight'
                 tensor = layer['weight']
@@ -247,8 +290,10 @@ class TorchExtractor:
                 parent_name = graph_data[name]['prev_op']
                 if parent_name in mapping and mapping[parent_name] in mapped_data:
                     parent = mapped_data[mapping[parent_name]]
-                else:
+                elif parent_name in not_mapped_data:
                     parent = not_mapped_data[parent_name]
+                else:
+                    continue
 
                 if parent_name + '.out' in mapping:
                     t_name = mapping[parent_name + '.out']
