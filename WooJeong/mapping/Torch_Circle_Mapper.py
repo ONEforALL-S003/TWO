@@ -143,7 +143,7 @@ class Torch2CircleMapper:
             raise Exception
 
         try:
-            subprocess.run(['python', 'one-import-onnx.py', '-i', onnx_path, '-o', circle_path])
+            subprocess.run(['python3', 'one-import-onnx.py', '-i', onnx_path, '-o', circle_path])
         except Exception as ex:
             print(ex)
             raise Exception
