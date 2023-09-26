@@ -31,19 +31,11 @@ from torch._C._onnx import TrainingMode
 sys.path.append('./include')
 from include.circle.Model import Model
 from include.circle.SubGraph import SubGraph
-from include.circle.Tensor import Tensor
 from include.circle.TensorType import TensorType
 from include.circle.BuiltinOperator import BuiltinOperator
 
 
 class Torch2CircleMapper:
-    @staticmethod
-    def permute(tensor: torch.Tensor) -> torch.Tensor:
-        dim = len(tensor.shape)
-        if dim == 4:  # NCHW to NHWC
-            tensor = tensor.permute(0, 2, 3, 1)
-        return tensor
-
     def __init__(self,
                  original_model: torch.nn.Module,
                  sample_input: torch.Tensor,
@@ -79,9 +71,6 @@ class Torch2CircleMapper:
         device = torch.device('cpu')
         original_model = original_model.to_empty(device=device)
         original_model._apply(lambda t: t.detach_())
-        # original_model.eval()
-        # original_model._apply(lambda t: t.int())
-        # sample_input = sample_input.int()
 
         self.__mapping = {}
         reverse_mapping = self.__reverse_mapping = {}
@@ -154,42 +143,13 @@ class Torch2CircleMapper:
         return self.__mapping, self.__partial_graph_data
 
     def __generate_mapped_dict(self, circle):
-        # # mapping torch name to circle name (key: torch name, value : circle name)
-        # # eg) torch: conv1.weight ->  circle: convolution;PartitionedCall/convolution
-        # self.__mapping = {}
-        # # mapping for circle tensor hash value to torch name (key: hashed circle tensor value,  value: torch name)
-        # # It uses Tensor value(numpy binary data including shape and value).
-        # # So when the tensors are unique, the key will be unique
-        # self.__reverse_mapping = reverse_mapping = {}
         original_model = self.__original_model
-        mapping = self.__mapping
-        reverse_mapping = self.__reverse_mapping
-
-
-        # params = original_model.named_parameters()
-        #
-        # state_dict = original_model.state_dict()
-        # tmp_param_name = []
-        #
-        # # generate mapping data of original model's parameter
-        # for name, param in params:
-        #     tmp_param_name.append(name)
-        #     tensor = param.data
-        #     # permute tensor if needed(To make equivalent of circle's)
-        #     tensor = self.permute(tensor).numpy()
-        #     shape = np.array(tensor.shape, dtype=np.int32)
-        #     shape = torch.from_numpy(shape)
-        #     shape = self.permute(shape).numpy()
-        #     # calculate hash value of binary numpy data
-        #     key = hash(shape.tobytes() + tensor.tobytes())
-        #     if key in reverse_mapping:
-        #         raise Exception('Duplicate Tensors exist')
-        #     # tensor hash value -> torch name
-        #     reverse_mapping[key] = name
 
         self.__network_input = []
         for idx in range(circle.SubgraphsLength()):
             self.__circle_subgraph_mapping_traverse(circle, circle.Subgraphs(idx))
+
+        graph_data = self.__partial_graph_data
 
         input_list = []
         output_list = []
@@ -211,9 +171,9 @@ class Torch2CircleMapper:
             elif len(mod.state_dict()) == 0:
                 # activation such as RELU, don't have tensor. So it can't be mapped
                 # use previous operator data to map it
-                if name not in self.__partial_graph_data:
-                    self.__partial_graph_data[name] = {}
-                self.__partial_graph_data[name]['prev_op'] = prev_module_name
+                if name not in graph_data:
+                    graph_data[name] = {}
+                graph_data[name]['prev_op'] = prev_module_name
             prev_module_name = name
 
         if len(input_list) == 1 and len(self.__network_input) == 1:
@@ -229,6 +189,7 @@ class Torch2CircleMapper:
         mapping, reverse_mapping = self.__mapping, self.__reverse_mapping
         # For operators those not have value
         op_mapping = {}
+        graph_data = self.__partial_graph_data
 
         # get input tensors of graph
         for idx in range(graph.InputsLength()):
@@ -241,6 +202,10 @@ class Torch2CircleMapper:
             if not i[0].startswith('_') and not inspect.ismethod(i[1]):
                 dtype_resolver[i[1]] = i[0].lower()
 
+        builtin_op_resolver = {}
+        for i in inspect.getmembers(BuiltinOperator):
+            if not i[0].startswith('_') and not inspect.ismethod(i[1]):
+                builtin_op_resolver[i[1]] = i[0].lower()
         # get all tensors from graph
         for idx in range(graph.TensorsLength()):
             tensor = graph.Tensors(idx)
@@ -274,20 +239,16 @@ class Torch2CircleMapper:
             if key in reverse_mapping:
                 origin_name = reverse_mapping[key]  # torch's name
                 mapping[origin_name] = name  # mapping torch name to circle tensor name
-                op_name = origin_name[:origin_name.rfind(".")]
+                origin_operation_name = origin_name[:origin_name.rfind(".")]
+                origin_tensor_name = origin_name[origin_name.rfind(".") + 1:]
+                if origin_operation_name not in graph_data:
+                    graph_data[origin_operation_name] = {}
+                graph_data[origin_operation_name][origin_tensor_name + '.shape'] = shape
 
                 # To map tensor's those whom don't have tensor value, memorize tensor data(buffer index)
-                if op_name not in op_mapping:
-                    op_mapping[op_name] = set()
-                op_mapping[op_name].add(idx)
-
-        builtin_op_resolver = {}
-
-        for i in inspect.getmembers(BuiltinOperator):
-            if not i[0].startswith('_') and not inspect.ismethod(i[1]):
-                builtin_op_resolver[i[1]] = i[0].lower()
-
-        graph_data = self.__partial_graph_data
+                if origin_operation_name not in op_mapping:
+                    op_mapping[origin_operation_name] = set()
+                op_mapping[origin_operation_name].add(idx)
 
         # approximately it takes O(N^2)
         # we need to think to it better way or not

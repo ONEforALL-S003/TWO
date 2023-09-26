@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import os
+
+import numpy
 import torch
 import torch.nn
 import torch.quantization
@@ -48,11 +50,16 @@ class TorchExtractor:
     }
 
     @staticmethod
-    def permute(tensor: torch.Tensor) -> torch.Tensor:
-        rank = len(tensor.shape)
+    def permute(buffer: numpy.ndarray) -> numpy.ndarray:
+        rank = len(buffer.shape)
+        # perm = list(range(2, rank)) + [1, 0]
         if rank == 4:  # NCHW to NHWC
-            tensor = tensor.permute(0, 2, 3, 1)
-        return tensor
+            buffer = np.transpose(buffer, [0, 2, 3, 1])
+        return buffer
+
+    @staticmethod
+    def permute_dimension():
+        print(1)
 
     def __init__(self,
                  quantized_model: torch.nn.Module,
@@ -159,8 +166,9 @@ class TorchExtractor:
         data['dtype'] = self.qdtype_mapping[tensor.dtype]['str']
         if tensor.dtype == torch.qint8:
             tensor = torch.int_repr(tensor)
-        tensor = self.permute(tensor)
-        data['value'] = self.__save_np(tensor.numpy())
+
+        tensor_value = self.permute(tensor.numpy())
+        data['value'] = self.__save_np(tensor_value)
         return data
 
     def generate_files(self, mapping=None):
@@ -202,37 +210,50 @@ class TorchExtractor:
                 zero_point = layer['zero_point'].numpy()
                 z_np = self.__save_np(zero_point)
 
-                weight = quantize_tensor(layer['weight'], scale=scale, zero_point=zero_point, dtype=q_dtype)
-                w_name = name + '.weight'
-                if w_name in mapping:
+                """
+                gamma -> tf's multiplier -> as 'weight' on PyTorch Batch Norm
+                beta -> tf's offset -> as 'bias' on PyTorch Batch Norm
+                
+                tf -> tflite
+                mul_float_data[i] = multiplier_float_data[i];
+                add_float_data[i] = offset_float_data[i] - mean_float_data[i] * multiplier_float_data[i];
+                """
+
+                mul = layer['weight']
+                add = layer['bias'] - layer['running_mean'] * mul
+                add = quantize_tensor(add, scale=scale, zero_point=zero_point, dtype=q_dtype)
+
+                add_name = name + '.bias'
+                if add_name in mapping:
                     data = mapped_data
-                    w_name = mapping[w_name]
+                    add_name = mapping[add_name]
                 else:
                     data = not_mapped_data
 
-                data[w_name] = {
+                data[add_name] = {
                     'scale': s_np,
                     'zerop': z_np,
                     'quantized_dimension': 0,
                     'dtype': dtype,
-                    'value': self.__save_np(weight)
+                    'value': self.__save_np(add)
                 }
 
-                bias = quantize_tensor(layer['bias'], scale=scale, zero_point=zero_point, dtype=q_dtype)
-                b_name = name + '.bias'
-                if b_name in mapping:
+                mul = quantize_tensor(mul, scale=scale, zero_point=zero_point, dtype=q_dtype)
+                mul_name = name + '.weight'
+                if mul_name in mapping:
                     data = mapped_data
-                    b_name = mapping[b_name]
+                    mul_name = mapping[mul_name]
                 else:
                     data = not_mapped_data
 
-                data[b_name] = {
+                data[mul_name] = {
                     'scale': s_np,
                     'zerop': z_np,
                     'quantized_dimension': 0,
                     'dtype': dtype,
-                    'value': self.__save_np(bias)
+                    'value': self.__save_np(mul)
                 }
+
                 continue
 
             if "weight" in layer:
