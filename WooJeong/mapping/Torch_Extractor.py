@@ -61,6 +61,13 @@ class TorchExtractor:
     def permute_dimension():
         print(1)
 
+    @staticmethod
+    def permute_dimension(rank, dimension):
+        if rank == 4:
+            perm = [0, 2, 3, 1]
+            return perm[dimension]
+        return dimension
+
     def __init__(self,
                  quantized_model: torch.nn.Module,
                  json_path: str,
@@ -93,10 +100,10 @@ class TorchExtractor:
             (All of them inherit torch.nn.modules.Module)
 
             Why '.nn.quantized.modules' instead of 'torch.nn.quantized.modules'?
-            On torch 1.7.0, the path is 'torch.nn.quantized.modules',
+            On previous version like 1.7.0, the path is 'torch.nn.quantized.modules',
             But on latest version, the path is 'torch.ao.nn.quantized.modules'
             """
-            if name == '' or str(type(mod)).find('.nn.quantized.modules') == -1:
+            if name == '' or '.nn.quantized.modules' not in str(type(mod)):
                 continue
             if isinstance(mod, torch.nn.quantized.modules.linear.LinearPackedParams):
                 if self.__input_dtype is None:
@@ -118,7 +125,7 @@ class TorchExtractor:
             for value_name, tensor in mod.state_dict().items():
                 # Need to skip just Module. Only Operator/Tensor/Activation Needed
                 # TODO: Find better way to check instance of torch.nn.quantized.modules
-                if str(type(mod)).find('.nn.quantized.modules') == -1:
+                if '.nn.quantized.modules' not in str(type(mod)):
                     continue
                 tensor_name = value_name[value_name.rfind(".") + 1:]
                 prefix = value_name[:value_name.rfind(".") + 1]
@@ -138,6 +145,11 @@ class TorchExtractor:
                     self.__input_dtype = tensor.dtype
 
                 data[tensor_name] = tensor
+
+        # TODO: preprocess extracted data HERE!
+        # such as permutation, dimension, reshape. Not generate file.
+        print(graph_data)
+        return
 
     def __save_np(self, data):
         file_name = str(self.__np_idx) + ".npy"
@@ -159,6 +171,7 @@ class TorchExtractor:
             data['quantized_dimension'] = 0
         elif tensor.qscheme() in (torch.per_channel_affine, torch.per_channel_symmetric,
                                   torch.per_channel_affine_float_qparams):
+            # TODO: permute
             data['scale'] = self.__save_np(tensor.q_per_channel_scales().numpy())
             data['zerop'] = self.__save_np(tensor.q_per_channel_zero_points().numpy())
             data['quantized_dimension'] = tensor.q_per_channel_axis()
@@ -205,6 +218,8 @@ class TorchExtractor:
             if 'running_mean' in layer and 'running_var' in layer:
                 if 'scale' not in layer or 'zero_point' not in layer:
                     continue
+                # TODO: permute / dimension
+
                 scale = layer['scale'].numpy()
                 s_np = self.__save_np(scale)
                 zero_point = layer['zero_point'].numpy()
