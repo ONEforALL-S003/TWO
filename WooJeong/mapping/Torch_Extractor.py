@@ -50,21 +50,26 @@ class TorchExtractor:
     }
 
     @staticmethod
-    def permute(buffer: numpy.ndarray) -> numpy.ndarray:
+    def permute(buffer: numpy.ndarray, optype='') -> numpy.ndarray:
         rank = len(buffer.shape)
         # perm = list(range(2, rank)) + [1, 0]
         if rank == 4:  # NCHW to NHWC
-            buffer = np.transpose(buffer, [0, 2, 3, 1])
+            # https://github.com/onnx/onnx-tensorflow/blob/ee0c5e537b3cebbddc5773871e6786e6468c7f3f/onnx_tf/handlers/backend/conv_mixin.py#L101
+            if 'depthwise' in optype: # TODO: check HWCN is right or not
+                perm = [2, 3, 1, 0]  # NCHW to HWCN
+            else:
+                perm = [0, 2, 3, 1]  # NCHW to NHWC
+            buffer = np.transpose(buffer, perm)
         return buffer
 
     @staticmethod
-    def permute_dimension():
-        print(1)
-
-    @staticmethod
-    def permute_dimension(rank, dimension):
+    def permute_dimension(rank, dimension, optype=''):
         if rank == 4:
-            perm = [0, 2, 3, 1]
+            # https://github.com/onnx/onnx-tensorflow/blob/ee0c5e537b3cebbddc5773871e6786e6468c7f3f/onnx_tf/handlers/backend/conv_mixin.py#L101
+            if 'depthwise' in optype: # TODO: check HWCN is right or not
+                perm = [2, 3, 1, 0]  # NCHW to HWCN
+            else:
+                perm = [0, 2, 3, 1]  # NCHW to NHWC
             return perm[dimension]
         return dimension
 
@@ -84,7 +89,7 @@ class TorchExtractor:
         self.__extract_module(quantized_model)
 
     def __extract_module(self, module: torch.nn.Module):
-        graph_data = self.__graph_data
+        graph_data = collections.OrderedDict()
         partial_graph_data = self.__partial_graph_data
 
         if len(module.state_dict()) == 0:
@@ -148,8 +153,139 @@ class TorchExtractor:
 
         # TODO: preprocess extracted data HERE!
         # such as permutation, dimension, reshape. Not generate file.
-        print(graph_data)
         return
+
+    def __preprocess(self, graph_data=collections.OrderedDict):
+        result = self.__graph_data = collections.OrderedDict()
+        partial_graph_data = self.__partial_graph_data
+
+        for name, layer in graph_data.items():
+            if 'running_mean' in layer and 'running_var' in layer:
+                if 'scale' not in layer or 'zero_point' not in layer:
+                    continue
+
+                scale = layer['scale'].numpy()
+                zero_point = layer['zero_point'].numpy()
+
+                """
+                gamma -> tf's multiplier -> as 'weight' on PyTorch Batch Norm
+                beta -> tf's offset -> as 'bias' on PyTorch Batch Norm
+
+                tf -> tflite
+                mul_float_data[i] = multiplier_float_data[i];
+                add_float_data[i] = offset_float_data[i] - mean_float_data[i] * multiplier_float_data[i];
+                """
+
+                mul = layer['weight']
+                add = layer['bias'] - layer['running_mean'] * mul
+                add = quantize_tensor(add, scale=scale, zero_point=zero_point, dtype=q_dtype)
+
+                add_name = name + '.bias'
+                if add_name in mapping:
+                    data = mapped_data
+                    add_name = mapping[add_name]
+                else:
+                    data = not_mapped_data
+
+                data[add_name] = {
+                    'scale': s_np,
+                    'zerop': z_np,
+                    'quantized_dimension': 0,
+                    'dtype': dtype,
+                    'value': self.__save_np(add)
+                }
+
+                mul = quantize_tensor(mul, scale=scale, zero_point=zero_point, dtype=q_dtype)
+                mul_name = name + '.weight'
+                if mul_name in mapping:
+                    data = mapped_data
+                    mul_name = mapping[mul_name]
+                else:
+                    data = not_mapped_data
+
+                data[mul_name] = {
+                    'scale': s_np,
+                    'zerop': z_np,
+                    'quantized_dimension': 0,
+                    'dtype': dtype,
+                    'value': self.__save_np(mul)
+                }
+
+                continue
+
+            if "weight" in layer:
+                w_name = name + '.weight'
+                tensor = layer['weight']
+                if w_name in mapping:
+                    data = mapped_data
+                    w_name = mapping[w_name]
+                else:
+                    data = not_mapped_data
+                if tensor.is_quantized:
+                    data[w_name] = self.__from_tensor(tensor=tensor)
+            if "scale" in layer and "zero_point" in layer:
+                scale = layer['scale'].numpy()
+                zero_point = layer['zero_point'].numpy()
+
+                layer_name = name
+                if layer_name in mapping:
+                    layer_name = mapping[layer_name]
+                    data = mapped_data
+                else:
+                    data = not_mapped_data
+
+                s_np = self.__save_np(scale)
+                z_np = self.__save_np(zero_point)
+                data[layer_name] = {
+                    'scale': s_np,
+                    'zerop': z_np,
+                    'dtype': dtype,
+                    'quantized_dimension': 0
+                }
+
+                if layer['bias'] is not None:
+                    b_name = name + '.bias'
+                    if b_name in mapping:
+                        b_name = mapping[b_name]
+                        data = mapped_data
+                    else:
+                        data = not_mapped_data
+                    bias = layer['bias']
+                    bias = quantize_tensor(bias, scale, zero_point, dtype=np.int32)
+                    data[b_name] = {
+                        'scale': s_np,
+                        'zerop': z_np,
+                        'dtype': 'int32',
+                        'quantized_dimension': 0
+                    }
+                    data[b_name]['value'] = self.__save_np(bias)
+                # if bias is not None:
+                #     bias = quantize_tensor(bias, scale, zero_point, dtype=np.int32)
+                #     data[b_name]['value'] = self.__save_np(bias)
+
+            # such as RELU or transpose like that, inherit quantization parameter
+            elif 'prev_op' in layer:
+                parent_name = graph_data[name]['prev_op']
+                if parent_name in mapping and mapping[parent_name] in mapped_data:
+                    parent = mapped_data[mapping[parent_name]]
+                elif parent_name in not_mapped_data:
+                    parent = not_mapped_data[parent_name]
+                else:
+                    continue
+
+                if parent_name + '.out' in mapping:
+                    t_name = mapping[parent_name + '.out']
+                    data = mapped_data
+                else:
+                    t_name = name
+                    data = not_mapped_data
+
+                data[t_name] = {
+                    'scale': parent['scale'],
+                    'zerop': parent['zerop'],
+                    'dtype': parent['dtype'],
+                    'quantized_dimension': 0
+                }
 
     def __save_np(self, data):
         file_name = str(self.__np_idx) + ".npy"
@@ -186,8 +322,8 @@ class TorchExtractor:
 
     def generate_files(self, mapping=None):
         graph_data = self.__graph_data
-        mapped_data = {}
-        not_mapped_data = {}
+        mapped_data = collections.OrderedDict()
+        not_mapped_data = collections.OrderedDict()
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path, exist_ok=True)
 
