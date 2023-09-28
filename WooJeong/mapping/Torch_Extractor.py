@@ -70,12 +70,11 @@ class TorchExtractor:
     def permute(buffer: numpy.ndarray, optype='') -> numpy.ndarray:
         rank = len(buffer.shape)
         # perm = list(range(2, rank)) + [1, 0]
-        if rank == 4:  # NCHW to NHWC
-            buffer = np.transpose(buffer, [0, 2, 3, 1])
-            if 'depthwise' in optype: # TODO
-                buffer_shape = buffer.shape
-                depthwise_filter_shape = [buffer_shape[0], buffer_shape[1], -1, buffer_shape[3]]
-                buffer = tf.reshape(buffer, depthwise_filter_shape)
+        if rank == 4:
+            if 'depthwise' in optype:  # NCHW to IHWC
+                buffer = np.transpose(buffer, [1, 2, 3, 0])
+            else:  # NCHW to NHWC
+                buffer = np.transpose(buffer, [0, 2, 3, 1])
         return buffer
 
     @staticmethod
