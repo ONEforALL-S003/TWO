@@ -81,8 +81,8 @@ class TorchExtractor:
     def permute_dimension(rank, dimension, optype=''):
         if rank == 4:
             # https://github.com/onnx/onnx-tensorflow/blob/ee0c5e537b3cebbddc5773871e6786e6468c7f3f/onnx_tf/handlers/backend/conv_mixin.py#L101
-            if 'depthwise' in optype: # TODO: check HWCN is right or not
-                perm = [2, 3, 1, 0]  # NCHW to HWCN
+            if 'depthwise' in optype:
+                perm = [1, 2, 3, 0]
             else:
                 perm = [0, 2, 3, 1]  # NCHW to NHWC
             return perm[dimension]
@@ -355,9 +355,6 @@ class TorchExtractor:
         if circle is not None and 'optype' in circle:
             optype = circle['optype']
 
-        if 'depthwise' in optype:
-            print(1)
-
         if tensor.qscheme() in (torch.per_tensor_affine, torch.per_tensor_symmetric):
             data['scale'] = np.array(tensor.q_scale())
             data['zerop'] = np.array(tensor.q_zero_point()).astype(np.int64)
@@ -365,12 +362,13 @@ class TorchExtractor:
             data['value'] = self.permute(to_numpy(tensor), optype=optype)
         elif tensor.qscheme() in (torch.per_channel_affine, torch.per_channel_symmetric,
                                   torch.per_channel_affine_float_qparams):
-
             data['scale'] = tensor.q_per_channel_scales().numpy()
             data['zerop'] = tensor.q_per_channel_zero_points().numpy().astype(np.int64)
-            data['quantized_dimension'] = tensor.q_per_channel_axis()
+            data['quantized_dimension'] = self.permute_dimension(rank=len(tensor.shape), dimension=tensor.q_per_channel_axis(),
+                                                                 optype=optype)
             data['value'] = self.permute(to_numpy(tensor), optype=optype)
 
+        data['dtype'] = self.qdtype_mapping[self.__input_dtype]['str']
         if circle is not None:
             circle_shape = circle['weight.shape']
             shape = data['value'].shape
@@ -424,139 +422,18 @@ class TorchExtractor:
                     'value': self.__save_np(np.zeros(shape=shape, dtype=np.int32))
                 }
 
+        for name, layer in graph_data.items():
+            if name in mapping:  # torch name
+                data = not_mapped_data
+            else:  # circle name
+                data = mapped_data
+            element = data[name] = {}
+            for attr_name, attr_value in layer.items():
+                if isinstance(attr_value, np.ndarray):
+                    element[attr_name] = self.__save_np(attr_value)
+                else:
+                    element[attr_name] = attr_value
 
-        # q_dtype= self.qdtype_mapping[self.__input_dtype]
-        # q_dtype, dtype = q_dtype['np'], q_dtype['str']
-        # for name, layer in graph_data.items():
-        #     if 'running_mean' in layer and 'running_var' in layer:
-        #         if 'scale' not in layer or 'zero_point' not in layer:
-        #             continue
-        #         # TODO: permute / dimension
-        #
-        #         scale = layer['scale'].numpy()
-        #         s_np = self.__save_np(scale)
-        #         zero_point = layer['zero_point'].numpy()
-        #         z_np = self.__save_np(zero_point)
-        #
-        #         """
-        #         gamma -> tf's multiplier -> as 'weight' on PyTorch Batch Norm
-        #         beta -> tf's offset -> as 'bias' on PyTorch Batch Norm
-        #
-        #         tf -> tflite
-        #         mul_float_data[i] = multiplier_float_data[i];
-        #         add_float_data[i] = offset_float_data[i] - mean_float_data[i] * multiplier_float_data[i];
-        #         """
-        #
-        #         mul = layer['weight']
-        #         add = layer['bias'] - layer['running_mean'] * mul
-        #         add = quantize_tensor(add, scale=scale, zero_point=zero_point, dtype=q_dtype)
-        #
-        #         add_name = name + '.bias'
-        #         if add_name in mapping:
-        #             data = mapped_data
-        #             add_name = mapping[add_name]
-        #         else:
-        #             data = not_mapped_data
-        #
-        #         data[add_name] = {
-        #             'scale': s_np,
-        #             'zerop': z_np,
-        #             'quantized_dimension': 0,
-        #             'dtype': dtype,
-        #             'value': self.__save_np(add)
-        #         }
-        #
-        #         mul = quantize_tensor(mul, scale=scale, zero_point=zero_point, dtype=q_dtype)
-        #         mul_name = name + '.weight'
-        #         if mul_name in mapping:
-        #             data = mapped_data
-        #             mul_name = mapping[mul_name]
-        #         else:
-        #             data = not_mapped_data
-        #
-        #         data[mul_name] = {
-        #             'scale': s_np,
-        #             'zerop': z_np,
-        #             'quantized_dimension': 0,
-        #             'dtype': dtype,
-        #             'value': self.__save_np(mul)
-        #         }
-        #
-        #         continue
-        #
-        #     if "weight" in layer:
-        #         w_name = name + '.weight'
-        #         tensor = layer['weight']
-        #         if w_name in mapping:
-        #             data = mapped_data
-        #             w_name = mapping[w_name]
-        #         else:
-        #             data = not_mapped_data
-        #         if tensor.is_quantized:
-        #             data[w_name] = self.__from_tensor(tensor=tensor)
-        #     if "scale" in layer and "zero_point" in layer:
-        #         scale = layer['scale'].numpy()
-        #         zero_point = layer['zero_point'].numpy()
-        #
-        #         layer_name = name
-        #         if layer_name in mapping:
-        #             layer_name = mapping[layer_name]
-        #             data = mapped_data
-        #         else:
-        #             data = not_mapped_data
-        #
-        #         s_np = self.__save_np(scale)
-        #         z_np = self.__save_np(zero_point)
-        #         data[layer_name] = {
-        #             'scale': s_np,
-        #             'zerop': z_np,
-        #             'dtype': dtype,
-        #             'quantized_dimension': 0
-        #         }
-        #
-        #         if layer['bias'] is not None:
-        #             b_name = name + '.bias'
-        #             if b_name in mapping:
-        #                 b_name = mapping[b_name]
-        #                 data = mapped_data
-        #             else:
-        #                 data = not_mapped_data
-        #             bias = layer['bias']
-        #             bias = quantize_tensor(bias, scale, zero_point, dtype=np.int32)
-        #             data[b_name] = {
-        #                 'scale': s_np,
-        #                 'zerop': z_np,
-        #                 'dtype': 'int32',
-        #                 'quantized_dimension': 0
-        #             }
-        #             data[b_name]['value'] = self.__save_np(bias)
-        #         # if bias is not None:
-        #         #     bias = quantize_tensor(bias, scale, zero_point, dtype=np.int32)
-        #         #     data[b_name]['value'] = self.__save_np(bias)
-        #
-        #     # such as RELU or transpose like that, inherit quantization parameter
-        #     elif 'prev_op' in layer:
-        #         parent_name = graph_data[name]['prev_op']
-        #         if parent_name in mapping and mapping[parent_name] in mapped_data:
-        #             parent = mapped_data[mapping[parent_name]]
-        #         elif parent_name in not_mapped_data:
-        #             parent = not_mapped_data[parent_name]
-        #         else:
-        #             continue
-        #
-        #         if parent_name + '.out' in mapping:
-        #             t_name = mapping[parent_name + '.out']
-        #             data = mapped_data
-        #         else:
-        #             t_name = name
-        #             data = not_mapped_data
-        #
-        #         data[t_name] = {
-        #             'scale': parent['scale'],
-        #             'zerop': parent['zerop'],
-        #             'dtype': parent['dtype'],
-        #             'quantized_dimension': 0
-        #         }
         if len(mapped_data) > 0:
             with open(self.__json_path, 'w') as json_file:
                 json.dump(mapped_data, json_file)

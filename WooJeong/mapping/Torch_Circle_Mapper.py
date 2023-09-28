@@ -77,21 +77,23 @@ class Torch2CircleMapper:
 
         visit = set()
 
-        idx = 1
+        idx = 100
 
         for name, mod in original_model.named_modules():
+            # https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#batchnorm2d
             if isinstance(mod, torch.nn.modules.batchnorm._BatchNorm):
                 # gamma -> tf's multiplier -> as 'weight' on PyTorch Batch Norm
                 # beta -> tf's offset -> as 'bias' on PyTorch Batch Norm
                 mod.affine = False
                 mod.training = False
                 mod.num_batches_tracked = None
+                mod.track_running_stats = False
                 visit.add(name + '.running_mean')
                 mod.running_mean.numpy().fill(0)
                 visit.add(name + '.running_var')
                 mod.running_var.numpy().fill(1)
                 mod.eps = 0
-                mod.momentum = 1
+                mod.momentum = 0  # 1 - momentum -> should be 0 to be converted as 1
                 mod.weight.numpy().fill(idx)
                 visit.add(name + '.weight')
                 reverse_mapping[idx] = name + '.weight'
