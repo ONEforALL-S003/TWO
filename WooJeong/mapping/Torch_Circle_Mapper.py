@@ -275,7 +275,7 @@ class Torch2CircleMapper:
                         mapping[op_name] = tensor_name
                         if op_name not in graph_data:
                             graph_data[op_name] = {}
-                        graph_data[op_name]['op_type'] = builtin_op_name
+                        graph_data[op_name]['optype'] = builtin_op_name
 
                     # can mapping output because it has only one!
                     if operator.OutputsLength() == 1:

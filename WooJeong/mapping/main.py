@@ -25,6 +25,6 @@ p_model = torch.quantization.prepare(model)
 p_model(input)
 quant = torch.quantization.convert(p_model)
 
-extractor = TorchExtractor(quant, json_path='preserve/qparam.json', partial_graph_data=data)
-extractor.generate_files(mapping)
+extractor = TorchExtractor(quant, json_path='preserve/qparam.json', partial_graph_data=data, mapping=mapping)
+extractor.generate_files()
 print(1)
