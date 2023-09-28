@@ -88,6 +88,23 @@ class TorchExtractor:
             return perm[dimension]
         return dimension
 
+    @staticmethod
+    def reshape(buffer, circle_shape):
+        torch_shape = np.asarray(buffer.shape)
+        if (torch_shape == circle_shape).all():
+            return buffer
+
+        torch_count = sum((torch_shape - 1) != 0)
+        circle_count = sum((circle_shape - 1) != 0)
+
+        if torch_count <= 1 and circle_count <= 1:
+            buffer = buffer.reshape(circle_shape)
+        else:
+            raise Exception('shape not match')
+
+        return buffer
+
+
     def __init__(self,
                  quantized_model: torch.nn.Module,
                  json_path: str,
@@ -216,12 +233,19 @@ class TorchExtractor:
                 if add_name in mapping:
                     add_name = mapping[add_name]
 
+                if circle is not None:
+                    add_shape = circle['bias.shape']
+                    mul_shape = circle['weight.shape']
+                else:
+                    add_shape = add.shape
+                    mul_shape = mul.shape
+
                 result[add_name] = {
                     'scale': scale,
                     'zerop': zero_point,
                     'quantized_dimension': 0,
                     'dtype': dtype,
-                    'value': add
+                    'value': self.reshape(add, add_shape)
                 }
 
                 mul = quantize_tensor(mul, scale, zero_point, q_dtype)
@@ -235,7 +259,7 @@ class TorchExtractor:
                     'zerop': zero_point,
                     'quantized_dimension': 0,
                     'dtype': dtype,
-                    'value': mul
+                    'value': self.reshape(mul, mul_shape)
                 }
                 continue
 
@@ -271,12 +295,17 @@ class TorchExtractor:
                     bias = layer['bias']
                     bias = quantize_tensor(bias, scale, zero_point, np.int32)
 
+                    if circle is not None:
+                        bias_shape = circle['bias.shape']
+                    else:
+                        bias_shape = bias.shape
+
                     result[b_name] = {
                         'scale': scale,
                         'zerop': zero_point,
                         'dtype': 'int32',
                         'quantized_dimension': 0,
-                        'value': bias
+                        'value': self.reshape(bias, bias_shape)
                     }
             elif 'per_channel_scales' in layer and 'per_channel_zero_points' in layer and 'axis' in layer:
                 scale = layer['per_channel_scales'].numpy()
@@ -308,7 +337,7 @@ class TorchExtractor:
                     bias = quantize_tensor_per_channel(bias, scale, zero_point, axis, np.int32)
                     result[b_name] = {
                         'scale': scale,
-                        'zerop': zero_point.numpy(),
+                        'zerop': zero_point,
                         'dtype': 'int32',
                         'quantized_dimension': axis,
                         'value': bias
@@ -376,29 +405,6 @@ class TorchExtractor:
                 raise Exception("Different Shape")
         return data
 
-    def __from_tensor(self, tensor):
-        if tensor is None:
-            raise Exception('tensor is null')
-        data = {}
-        if tensor.qscheme() in (torch.per_tensor_affine, torch.per_tensor_symmetric):
-            data['scale'] = self.__save_np(np.array(tensor.q_scale()))
-            data['zerop'] = self.__save_np(np.array(tensor.q_zero_point()))
-            data['quantized_dimension'] = 0
-        elif tensor.qscheme() in (torch.per_channel_affine, torch.per_channel_symmetric,
-                                  torch.per_channel_affine_float_qparams):
-            # TODO: permute
-            data['scale'] = self.__save_np(tensor.q_per_channel_scales().numpy())
-            data['zerop'] = self.__save_np(tensor.q_per_channel_zero_points().numpy())
-            data['quantized_dimension'] = tensor.q_per_channel_axis()
-
-        data['dtype'] = self.qdtype_mapping[tensor.dtype]['str']
-        if tensor.dtype == torch.qint8:
-            tensor = torch.int_repr(tensor)
-
-        tensor_value = self.permute(tensor.numpy())
-        data['value'] = self.__save_np(tensor_value)
-        return data
-
     def generate_files(self):
         graph_data = self.__graph_data
         mapped_data = collections.OrderedDict()
@@ -408,14 +414,14 @@ class TorchExtractor:
 
         mapping = self.__mapping
 
-
         if 'NULL' in mapping:
-            z_np = self.__save_np(np.array([0], dtype=np.float32))
+            s_np = self.__save_np(np.array([0], dtype=np.float32))
+            z_np = self.__save_np(np.array([0], dtype=np.int64))
             for null_op in mapping['NULL']:
                 name = null_op[0]
                 shape = null_op[1]
                 mapped_data[name] = {
-                    'scale': z_np,
+                    'scale': s_np,
                     'zerop': z_np,
                     'dtype': 'int32',
                     'quantized_dimension': 0,
