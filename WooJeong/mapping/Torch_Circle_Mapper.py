@@ -96,11 +96,11 @@ class Torch2CircleMapper:
                 mod.momentum = 0  # 1 - momentum -> should be 0 to be converted as 1
                 mod.weight.numpy().fill(idx)
                 visit.add(name + '.weight')
-                reverse_mapping[idx] = name + '.weight'
+                reverse_mapping[idx] = name + '.mul.weight'
                 idx = idx + 1
                 mod.bias.numpy().fill(idx)
                 visit.add(name + '.bias')
-                reverse_mapping[idx] = name + '.bias'
+                reverse_mapping[idx] = name + '.add.bias'
                 idx = idx + 1
 
         for name, tensor in original_model.state_dict().items():
@@ -225,7 +225,7 @@ class Torch2CircleMapper:
             buffer = np.frombuffer(buffer, dtype=np_dtype)
             key = buffer[0]
 
-            # If not, it does not belong to PyTorch's Tensor
+            # If not, it does not belong to our marked PyTorch's Tensor
             if not np.all(buffer == key):
                 continue
 
@@ -240,7 +240,9 @@ class Torch2CircleMapper:
             # If equivalent torch tensor of current circle tensor, we can map it
             if key in reverse_mapping:
                 origin_name = reverse_mapping[key]  # torch's name
-                mapping[origin_name] = name  # mapping torch name to circle tensor name
+                if origin_name not in mapping:
+                    mapping[origin_name] = []
+                mapping[origin_name].append(name)  # mapping torch name to circle tensor name
                 origin_operation_name = origin_name[:origin_name.rfind(".")]
                 origin_tensor_name = origin_name[origin_name.rfind(".") + 1:]
                 if origin_operation_name not in graph_data:
@@ -270,18 +272,24 @@ class Torch2CircleMapper:
                 # Then we can map torch operator name to circle's operator name
                 if input_set.issuperset(op_input):
                     input_set = input_set - op_input
+
                     for tensor_idx in input_set:
                         tensor = graph.Tensors(tensor_idx)
                         tensor_name = tensor.Name().decode('utf-8')
                         # torch operator name -> circle operator name
-                        mapping[op_name] = tensor_name
+                        if op_name not in mapping:
+                            mapping[op_name] = []
+                        mapping[op_name].append(tensor_name)
                         if op_name not in graph_data:
                             graph_data[op_name] = {}
                         graph_data[op_name]['optype'] = builtin_op_name
 
-                    # can mapping output because it has only one!
-                    if operator.OutputsLength() == 1:
-                        output_tensor = graph.Tensors(operator.Outputs(0))
+
+                    if op_name + '.out' not in mapping:
+                        mapping[op_name + '.out'] = []
+
+                    for output_idx in range(operator.OutputsLength()):
+                        output_tensor = graph.Tensors(operator.Outputs(output_idx))
                         output_tensor_name = output_tensor.Name().decode('utf-8')
-                        mapping[op_name + '.out'] = output_tensor_name
+                        mapping[op_name + '.out'].append(output_tensor_name)
                     break
