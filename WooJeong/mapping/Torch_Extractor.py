@@ -26,7 +26,7 @@ import tensorflow as tf
 
 
 def quantize_numpy(tensor: np.ndarray, scale: np.ndarray, zero_point: np.ndarray,
-                    dtype=np.int8):
+                   dtype=np.int8):
     tensor = np.round(tensor / scale + zero_point)
     return tensor.astype(dtype)
 
@@ -39,7 +39,7 @@ def quantize_tensor(tensor: torch.Tensor, scale: np.ndarray, zero_point: np.ndar
 
 
 def quantize_tensor_per_channel(tensor: torch.Tensor, scale: np.ndarray, zero_point: np.ndarray,
-                    dtype=np.int8) -> np.ndarray:
+                                dtype=np.int8) -> np.ndarray:
     # TODO: implement
     return tensor.numpy()
 
@@ -103,7 +103,6 @@ class TorchExtractor:
             raise Exception('shape not match')
 
         return buffer
-
 
     def __init__(self,
                  quantized_model: torch.nn.Module,
@@ -191,7 +190,7 @@ class TorchExtractor:
         self.__preprocess(graph_data)
         return
 
-    def __get_input_output(self, name, null_const:set):
+    def __get_input_output(self, name, null_const: set):
         mapping = self.__mapping
         inputs = []
         outputs = []
@@ -208,7 +207,7 @@ class TorchExtractor:
 
         return inputs, outputs
 
-    def __preprocess(self, graph_data=collections.OrderedDict):
+    def __preprocess(self, graph_data: collections.OrderedDict):
         result = self.__graph_data = collections.OrderedDict()
         mapping = self.__mapping
         partial_data = self.__partial_graph_data
@@ -216,247 +215,299 @@ class TorchExtractor:
         if self.__input_dtype is None:
             raise Exception('Check network(torch model) have have tensor internally')
 
-        NULL_CONST = set()
-        if 'NULL' in mapping:
-            for null_const in mapping['NULL']:
-                NULL_CONST.add(null_const[0])
-
         q_dtype = self.qdtype_mapping[self.__input_dtype]
         q_dtype, dtype = q_dtype['np'], q_dtype['str']
+
+        NULL_CONST = set()
+        if 'NULL' in partial_data:
+            for null_const in partial_data['NULL']:
+                NULL_CONST.add(null_const[0])
+
+        tmp_key_list = list(graph_data.keys())
+
+        if 'input' in partial_data:
+            circle_input_name = partial_data['input']
+            self.__process_io(circle_input_name, graph_data[tmp_key_list[0]], dtype)
+
+        if 'output' in partial_data:
+            circle_output_name = partial_data['output']
+            self.__process_io(circle_output_name, graph_data[tmp_key_list[len(tmp_key_list) - 1]], dtype)
+
+        tmp_key_list = None
+
         for name, layer in graph_data.items():
-            # Batch Normalization
-            if 'running_mean' in layer and 'running_var' in layer:
-                if 'scale' not in layer or 'zero_point' not in layer:
-                    continue
+            self.__process_layer(name, layer, q_dtype, dtype, NULL_CONST, graph_data)
+        return
 
-                scale = layer['scale'].numpy()
-                zero_point = layer['zero_point'].numpy().astype(np.int64)
+    def __process_io(self, name: str, layer: dict, dtype: str):
+        result = self.__graph_data
 
-                """
-                gamma -> tf's multiplier -> as 'weight' on PyTorch Batch Norm
-                beta -> tf's offset -> as 'bias' on PyTorch Batch Norm
+        if 'scale' in layer and 'zero_point' in layer:
+            scale = layer['scale'].numpy()
+            zero_point = layer['zero_point'].numpy().astype(np.int64)
 
-                tf -> tflite
-                mul_float_data[i] = multiplier_float_data[i];
-                add_float_data[i] = offset_float_data[i] - mean_float_data[i] * multiplier_float_data[i];
-                """
+            result[name] = {
+                'scale': scale,
+                'zerop': zero_point,
+                'dtype': dtype,
+                'quantized_dimension': 0
+            }
+        elif 'per_channel_scales' in layer and 'per_channel_zero_points' in layer and 'axis' in layer:
+            scale = layer['per_channel_scales'].numpy()
+            zero_point = layer['per_channel_zero_points'].numpy().astype(np.int64)
+            axis = layer['axis']
+            if isinstance(axis, torch.Tensor):
+                axis = axis.numpy()[0]
+            elif isinstance(axis, np.ndarray):
+                axis = axis[0]
 
-                mul = layer['weight']
-                add = layer['bias'] - layer['running_mean'] * mul
-                add = quantize_tensor(add, scale, zero_point, q_dtype)
+            result[name] = {
+                'scale': scale,
+                'zerop': zero_point,
+                'dtype': dtype,
+                'quantized_dimension': self.permute_dimension(axis)
+            }
+        else:
+            raise Exception
 
-                add_name = name + '.add.bias'
-                if add_name in mapping:
-                    if len(mapping[add_name]) != 1:
-                        raise Exception
-                    add_name = mapping[add_name][0]
+    def __process_layer(self, name: str, layer: dict, q_dtype: np.dtype, dtype: str, null_const: set,
+                        graph_data: collections.OrderedDict):
+        result = self.__graph_data
+        mapping = self.__mapping
+        partial_data = self.__partial_graph_data
 
-                if name + '.add' in partial_data:
-                    add_shape = partial_data[name + '.add']['bias.shape']
-                else:
-                    add_shape = add.shape
+        # Batch Normalization
+        if 'running_mean' in layer and 'running_var' in layer:
+            if 'scale' not in layer or 'zero_point' not in layer:
+                return
 
-                result[add_name] = {
-                    'scale': scale,
-                    'zerop': zero_point,
-                    'quantized_dimension': 0,
-                    'dtype': dtype,
-                    'value': self.reshape(add, add_shape)
-                }
+            scale = layer['scale'].numpy()
+            zero_point = layer['zero_point'].numpy().astype(np.int64)
 
-                mul = quantize_tensor(mul, scale, zero_point, q_dtype)
+            """
+            gamma -> tf's multiplier -> as 'weight' on PyTorch Batch Norm
+            beta -> tf's offset -> as 'bias' on PyTorch Batch Norm
 
-                mul_name = name + '.mul.weight'
-                if mul_name in mapping:
-                    if len(mapping[mul_name]) != 1:
-                        raise Exception
-                    mul_name = mapping[mul_name][0]
+            tf -> tflite
+            mul_float_data[i] = multiplier_float_data[i];
+            add_float_data[i] = offset_float_data[i] - mean_float_data[i] * multiplier_float_data[i];
+            """
 
-                if name + '.mul' in partial_data:
-                    mul_shape = partial_data[name + '.mul']['weight.shape']
-                else:
-                    mul_shape = mul.shape
+            mul = layer['weight']
+            add = layer['bias'] - layer['running_mean'] * mul
+            add = quantize_tensor(add, scale, zero_point, q_dtype)
 
-                result[mul_name] = {
-                    'scale': scale,
-                    'zerop': zero_point,
-                    'quantized_dimension': 0,
-                    'dtype': dtype,
-                    'value': self.reshape(mul, mul_shape)
-                }
+            add_name = name + '.add.bias'
+            if add_name in mapping:
+                if len(mapping[add_name]) != 1:
+                    raise Exception
+                add_name = mapping[add_name][0]
 
-                add_inputs, add_outputs = self.__get_input_output(name + '.add', NULL_CONST)
-                mul_inputs, mul_outputs = self.__get_input_output(name + '.mul', NULL_CONST)
-
-                for io_name in set(add_inputs + add_outputs + mul_inputs + mul_outputs):
-                    if io_name in result:
-                        continue
-                    result[io_name] = {
-                        'scale': scale,
-                        'zerop': zero_point,
-                        'quantized_dimension': 0,
-                        'dtype': dtype,
-                    }
-
-                continue
-
-            if name in partial_data:
-                circle = partial_data[name]
+            if name + '.add' in partial_data:
+                add_shape = partial_data[name + '.add']['bias.shape']
             else:
-                circle = None
+                add_shape = add.shape
 
-            inputs, outputs = self.__get_input_output(name, NULL_CONST)
+            result[add_name] = {
+                'scale': scale,
+                'zerop': zero_point,
+                'quantized_dimension': 0,
+                'dtype': dtype,
+                'value': self.reshape(add, add_shape)
+            }
 
-            if 'weight' in layer:
-                w_name = name + '.weight'
-                tensor = layer['weight']
-                if w_name in mapping:
-                    if len(mapping[w_name]) != 1:
-                        raise Exception
-                    w_name = mapping[w_name][0]
+            mul = quantize_tensor(mul, scale, zero_point, q_dtype)
 
-                if tensor.is_quantized:
-                    result[w_name] = self.__process_weight(tensor, circle)
+            mul_name = name + '.mul.weight'
+            if mul_name in mapping:
+                if len(mapping[mul_name]) != 1:
+                    raise Exception
+                mul_name = mapping[mul_name][0]
 
-            if 'scale' in layer and 'zero_point' in layer:
-                scale = layer['scale'].numpy()
-                zero_point = layer['zero_point'].numpy().astype(np.int64)
+            if name + '.mul' in partial_data:
+                mul_shape = partial_data[name + '.mul']['weight.shape']
+            else:
+                mul_shape = mul.shape
 
-                tensor_list = []
+            result[mul_name] = {
+                'scale': scale,
+                'zerop': zero_point,
+                'quantized_dimension': 0,
+                'dtype': dtype,
+                'value': self.reshape(mul, mul_shape)
+            }
 
-                if name in mapping:
-                    for tensor_name in mapping[name]:
-                        if tensor_name not in NULL_CONST:
-                            continue
-                        tensor_list.append(tensor_name)
-                else:
-                    tensor_list.append(name)
+            add_inputs, add_outputs = self.__get_input_output(name + '.add', null_const)
+            mul_inputs, mul_outputs = self.__get_input_output(name + '.mul', null_const)
 
-                for tensor_name in set(tensor_list + inputs + outputs):
-                    if tensor_name in result:
-                        continue
-
-                    result[tensor_name] = {
-                        'scale': scale,
-                        'zerop': zero_point,
-                        'dtype': dtype,
-                        'quantized_dimension': 0
-                    }
-
-                if 'bias' in layer and layer['bias'] is not None:
-                    b_name = name + '.bias'
-
-                    que = []
-
-                    if b_name in mapping:
-                        for tensor_name in mapping[b_name]:
-                            que.append(tensor_name)
-                    else:
-                        que.append(b_name)
-
-                    bias = layer['bias']
-                    bias = quantize_tensor(bias, scale, zero_point, np.int32)
-
-                    if circle is not None:
-                        bias_shape = circle['bias.shape']
-                    else:
-                        bias_shape = bias.shape
-
-                    bias = self.reshape(bias, bias_shape)
-
-                    for bias_name in que:
-                        if bias_name in result:
-                            continue
-
-                        result[bias_name] = {
-                            'scale': scale,
-                            'zerop': zero_point,
-                            'dtype': 'int32',
-                            'quantized_dimension': 0,
-                            'value': bias
-                        }
-            elif 'per_channel_scales' in layer and 'per_channel_zero_points' in layer and 'axis' in layer:
-                scale = layer['per_channel_scales'].numpy()
-                zero_point = layer['per_channel_zero_points'].numpy().astype(np.int64)
-
-                tensor_list = []
-
-                if name in mapping:
-                    for tensor_name in mapping[name]:
-                        if tensor_name not in NULL_CONST:
-                            continue
-                        tensor_list.append(tensor_name)
-                else:
-                    tensor_list.append(name)
-
-                axis = layer['axis']
-                if isinstance(axis, torch.Tensor):
-                    axis = axis.numpy()[0]
-                elif isinstance(axis, np.ndarray):
-                    axis = axis[0]
-
-                for tensor_name in set(tensor_list + inputs + outputs):
-                    if tensor_name in result:
-                        continue
-
-                    result[tensor_name] = {
-                        'scale': scale,
-                        'zerop': zero_point,
-                        'dtype': dtype,
-                        'quantized_dimension': axis
-                    }
-
-                if 'bias' in layer and layer['bias'] is not None:
-                    b_name = name + '.bias'
-
-                    que = []
-
-                    if b_name in mapping:
-                        for tensor_name in mapping[b_name]:
-                            que.append(tensor_name)
-                    else:
-                        que.append(b_name)
-
-                    bias = layer['bias']
-                    bias = quantize_tensor_per_channel(bias, scale, zero_point, axis, np.int32)
-
-                    for bias_name in que:
-                        if bias_name in result:
-                            continue
-
-                        result[bias_name] = {
-                            'scale': scale,
-                            'zerop': zero_point,
-                            'dtype': 'int32',
-                            'quantized_dimension': axis,
-                            'value': bias
-                        }
-            # such as RELU or transpose like that, inherit quantization parameter
-            elif 'prev_op' in layer:
-                parent_name = graph_data[name]['prev_op']
-                if parent_name not in result:
+            for io_name in set(add_inputs + add_outputs + mul_inputs + mul_outputs):
+                if io_name in result:
                     continue
+                result[io_name] = {
+                    'scale': scale,
+                    'zerop': zero_point,
+                    'quantized_dimension': 0,
+                    'dtype': dtype,
+                }
+
+            return
+
+        if name in partial_data:
+            circle = partial_data[name]
+        else:
+            circle = None
+
+        inputs, outputs = self.__get_input_output(name, null_const)
+
+        if 'weight' in layer:
+            w_name = name + '.weight'
+            tensor = layer['weight']
+            if w_name in mapping:
+                if len(mapping[w_name]) != 1:
+                    raise Exception
+                w_name = mapping[w_name][0]
+
+            if tensor.is_quantized:
+                result[w_name] = self.__process_weight(tensor, circle)
+
+        if 'scale' in layer and 'zero_point' in layer:
+            scale = layer['scale'].numpy()
+            zero_point = layer['zero_point'].numpy().astype(np.int64)
+
+            tensor_list = []
+
+            if name in mapping:
+                for tensor_name in mapping[name]:
+                    if tensor_name not in null_const:
+                        continue
+                    tensor_list.append(tensor_name)
+            else:
+                tensor_list.append(name)
+
+            for tensor_name in set(tensor_list + inputs + outputs):
+                if tensor_name in result:
+                    continue
+
+                result[tensor_name] = {
+                    'scale': scale,
+                    'zerop': zero_point,
+                    'dtype': dtype,
+                    'quantized_dimension': 0
+                }
+
+            if 'bias' in layer and layer['bias'] is not None:
+                b_name = name + '.bias'
 
                 que = []
 
-                if parent_name + '.out' in mapping:
-                    for tensor_name in mapping[parent_name + '.out']:
+                if b_name in mapping:
+                    for tensor_name in mapping[b_name]:
                         que.append(tensor_name)
                 else:
-                    que.append(name)
+                    que.append(b_name)
 
-                data = {
-                    'scale': result[parent_name]['scale'],
-                    'zerop': result[parent_name]['zerop'],
-                    'dtype': result[parent_name]['dtype'],
-                    'quantized_dimension': result[parent_name]['quantized_dimension']
+                bias = layer['bias']
+                bias = quantize_tensor(bias, scale, zero_point, np.int32)
+
+                if circle is not None:
+                    bias_shape = circle['bias.shape']
+                else:
+                    bias_shape = bias.shape
+
+                bias = self.reshape(bias, bias_shape)
+
+                for bias_name in que:
+                    if bias_name in result:
+                        continue
+
+                    result[bias_name] = {
+                        'scale': scale,
+                        'zerop': zero_point,
+                        'dtype': 'int32',
+                        'quantized_dimension': 0,
+                        'value': bias
+                    }
+        elif 'per_channel_scales' in layer and 'per_channel_zero_points' in layer and 'axis' in layer:
+            scale = layer['per_channel_scales'].numpy()
+            zero_point = layer['per_channel_zero_points'].numpy().astype(np.int64)
+
+            tensor_list = []
+
+            if name in mapping:
+                for tensor_name in mapping[name]:
+                    if tensor_name not in null_const:
+                        continue
+                    tensor_list.append(tensor_name)
+            else:
+                tensor_list.append(name)
+
+            axis = layer['axis']
+            if isinstance(axis, torch.Tensor):
+                axis = axis.numpy()[0]
+            elif isinstance(axis, np.ndarray):
+                axis = axis[0]
+
+            for tensor_name in set(tensor_list + inputs + outputs):
+                if tensor_name in result:
+                    continue
+
+                result[tensor_name] = {
+                    'scale': scale,
+                    'zerop': zero_point,
+                    'dtype': dtype,
+                    'quantized_dimension': self.permute_dimension(axis)
                 }
 
-                for tensor_name in que:
-                    if tensor_name in result:
+            if 'bias' in layer and layer['bias'] is not None:
+                b_name = name + '.bias'
+
+                que = []
+
+                if b_name in mapping:
+                    for tensor_name in mapping[b_name]:
+                        que.append(tensor_name)
+                else:
+                    que.append(b_name)
+
+                bias = layer['bias']
+                bias = quantize_tensor_per_channel(bias, scale, zero_point, axis, np.int32)
+
+                for bias_name in que:
+                    if bias_name in result:
                         continue
-                    result[tensor_name] = data
-        return
+
+                    result[bias_name] = {
+                        'scale': scale,
+                        'zerop': zero_point,
+                        'dtype': 'int32',
+                        'quantized_dimension': axis,
+                        'value': bias
+                    }
+        # such as RELU or transpose like that, inherit quantization parameter
+        elif 'prev_op' in layer:
+            parent_name = graph_data[name]['prev_op']
+            if parent_name not in result:
+                return
+
+            que = []
+
+            if parent_name + '.out' in mapping:
+                for tensor_name in mapping[parent_name + '.out']:
+                    que.append(tensor_name)
+            else:
+                que.append(name)
+
+            data = {
+                'scale': result[parent_name]['scale'],
+                'zerop': result[parent_name]['zerop'],
+                'dtype': result[parent_name]['dtype'],
+                'quantized_dimension': result[parent_name]['quantized_dimension']
+            }
+
+            for tensor_name in que:
+                if tensor_name in result:
+                    continue
+                result[tensor_name] = data
 
     def __save_np(self, data):
         file_name = str(self.__np_idx) + ".npy"
@@ -488,7 +539,8 @@ class TorchExtractor:
                                   torch.per_channel_affine_float_qparams):
             data['scale'] = tensor.q_per_channel_scales().numpy()
             data['zerop'] = tensor.q_per_channel_zero_points().numpy().astype(np.int64)
-            data['quantized_dimension'] = self.permute_dimension(rank=len(tensor.shape), dimension=tensor.q_per_channel_axis(),
+            data['quantized_dimension'] = self.permute_dimension(rank=len(tensor.shape),
+                                                                 dimension=tensor.q_per_channel_axis(),
                                                                  optype=optype)
             data['value'] = self.permute(to_numpy(tensor), optype=optype)
 
@@ -507,12 +559,13 @@ class TorchExtractor:
         if not os.path.exists(self.__dir_path):
             os.makedirs(self.__dir_path, exist_ok=True)
 
+        partial_data = self.__partial_graph_data
         mapping = self.__mapping
 
-        if 'NULL' in mapping:
+        if 'NULL' in partial_data:
             s_np = self.__save_np(np.array([0], dtype=np.float32))
             z_np = self.__save_np(np.array([0], dtype=np.int64))
-            for null_op in mapping['NULL']:
+            for null_op in partial_data['NULL']:
                 name = null_op[0]
                 shape = null_op[1]
                 mapped_data[name] = {

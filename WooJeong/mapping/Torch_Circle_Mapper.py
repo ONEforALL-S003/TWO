@@ -148,6 +148,7 @@ class Torch2CircleMapper:
         original_model = self.__original_model
 
         self.__network_input = []
+        self.__network_output = []
         for idx in range(circle.SubgraphsLength()):
             self.__circle_subgraph_mapping_traverse(circle, circle.Subgraphs(idx))
 
@@ -178,14 +179,23 @@ class Torch2CircleMapper:
                 graph_data[name]['prev_op'] = prev_module_name
             prev_module_name = name
 
-        if len(input_list) == 1 and len(self.__network_input) == 1:
-            self.__mapping[input_list[0]] = self.__network_input[0].Name().decode('utf-8')
+        circle_input = self.__network_input
+        if len(input_list) == 1 and len(circle_input) == 1:
+            self.__mapping[input_list[0]] = circle_input.Name().decode('utf-8')
         # Even there is no QuantStub mapping works
-        elif len(input_list) == 0:
-            pass
-            # print("There are no QuantStub on the Network. Please check it manually")
+        elif len(input_list) == 0 and len(circle_input) == 1:
+            self.__partial_graph_data['input'] = circle_input[0].Name().decode('utf-8')
         else:
-            print("There are more than one input of Network. Please map it manually")
+            print("There are more than one input in Network. Please map it manually")
+
+        circle_output = self.__network_output
+        if len(output_list) == 1 and len(circle_output) == 1:
+            self.__mapping[output_list[0]] = circle_output.Name().decode('utf-8')
+        # Even there is no DeQuantStub mapping works
+        elif len(output_list) == 0 and len(circle_input) == 1:
+            self.__partial_graph_data['output'] = circle_output[0].Name().decode('utf-8')
+        else:
+            print("There are more than one output in Network. Please map it manually")
 
     def __circle_subgraph_mapping_traverse(self, circle: Model, graph: SubGraph):
         mapping, reverse_mapping = self.__mapping, self.__reverse_mapping
@@ -197,6 +207,11 @@ class Torch2CircleMapper:
         for idx in range(graph.InputsLength()):
             input_tensor = graph.Tensors(graph.Inputs(idx))
             self.__network_input.append(input_tensor)
+
+        # get output tensors of graph
+        for idx in range(graph.OutputsLength()):
+            output_tensor = graph.Tensors(graph.Outputs(idx))
+            self.__network_output.append(output_tensor)
 
         dtype_resolver = {}
 
@@ -232,9 +247,9 @@ class Torch2CircleMapper:
             key = round(key)
 
             if key == 0:
-                if 'NULL' not in mapping:
-                    mapping['NULL'] = []
-                mapping['NULL'].append([name, shape])
+                if 'NULL' not in graph_data:
+                    graph_data['NULL'] = []
+                graph_data['NULL'].append([name, shape])
                 continue
 
             # If equivalent torch tensor of current circle tensor, we can map it
