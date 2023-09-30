@@ -341,7 +341,7 @@ class TorchExtractor:
             mul_inputs, mul_outputs = self.__get_input_output(name + '.mul', null_const)
 
             for io_name in set(add_inputs + add_outputs + mul_inputs + mul_outputs):
-                if io_name in result:
+                if io_name in result or io_name in null_const:
                     continue
                 result[io_name] = {
                     'scale': scale,
@@ -378,7 +378,7 @@ class TorchExtractor:
 
             if name in mapping:
                 for tensor_name in mapping[name]:
-                    if tensor_name not in null_const:
+                    if tensor_name in null_const:
                         continue
                     tensor_list.append(tensor_name)
             else:
@@ -435,7 +435,7 @@ class TorchExtractor:
 
             if name in mapping:
                 for tensor_name in mapping[name]:
-                    if tensor_name not in null_const:
+                    if tensor_name in null_const:
                         continue
                     tensor_list.append(tensor_name)
             else:
