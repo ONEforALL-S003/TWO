@@ -3,52 +3,51 @@ import subprocess
 import torch
 import random
 import numpy as np
+from torch.ao.quantization import QConfig, HistogramObserver, PerChannelMinMaxObserver
 
 from Torch_Circle_Mapper import Torch2CircleMapper
 from Torch_Extractor import TorchExtractor
 
-from torch._C._onnx import TrainingMode
 
-seed = 1234
-random.seed(seed)
-np.random.seed(seed)
-torch.random.manual_seed(seed)
+import urllib
+url, filename = ("https://github.com/pytorch/hub/raw/master/images/dog.jpg", "dog.jpg")
+try: urllib.URLopener().retrieve(url, filename)
+except: urllib.request.urlretrieve(url, filename)
+
+from PIL import Image
+from torchvision import transforms
+input_image = Image.open(filename)
+preprocess = transforms.Compose([
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+])
+input_tensor = preprocess(input_image)
+input_batch = input_tensor.unsqueeze(0) # create a mini-batch as expected by the model
 
 
-model = torch.hub.load("pytorch/vision:v0.14.1", "mobilenet_v2",  pretrained=True)
+model_name = "mobilenet_v2"
+model = torch.hub.load("pytorch/vision:v0.14.1", model_name,  pretrained=True)
 
-input = torch.randn(1, 3, 244, 244)
+input = input_batch
+# input = torch.randn(1, 3, 224, 224)
+# input = torch.randn(1, 3, 299, 299)
 
-# for onnx_opset in range(9, 16):
-#     try:
-#         torch.onnx.export(
-#             model,
-#             input,
-#             'preserve/model.onnx',
-#             training=TrainingMode.PRESERVE,  # torch/onnx/utils 1164
-#             export_params=True,
-#             opset_version=onnx_opset,
-#             do_constant_folding=False
-#         )
-#         onnx_saved = True
-#         break
-#     except Exception as ex:
-#         print(ex)
-#
-# if not onnx_saved:
-#     raise Exception
-#
-# subprocess.run(['python3', 'one-import-onnx.py', '-i', 'preserve/model.onnx', '-o', 'preserve/tmp.circle'])
-
-mapper = Torch2CircleMapper(original_model=model, sample_input=input, dir_path='preserve')
+mapper = Torch2CircleMapper(original_model=model, sample_input=input, dir_path=model_name)
 mapping, data = mapper.get_mapped_dict()
 
+input_numpy = input.numpy()
+with open(model_name + '/input0', 'wb') as fb:
+    fb.write(bytes(input_numpy))
+
 model.eval()
-model.qconfig = torch.quantization.get_default_qconfig('x86')
+model.qconfig = QConfig(activation=torch.quantization.MinMaxObserver.with_args(dtype=torch.quint8),
+                        weight=PerChannelMinMaxObserver.with_args(dtype=torch.qint8))
 p_model = torch.quantization.prepare(model)
 p_model(input)
 quant = torch.quantization.convert(p_model)
+print(quant)
 
-extractor = TorchExtractor(quant, json_path='preserve/qparam.json', partial_graph_data=data, mapping=mapping)
+extractor = TorchExtractor(quant, json_path=model_name + '/qparam.json', qdtype=torch.quint8, partial_graph_data=data, mapping=mapping)
 extractor.generate_files()
-print(1)

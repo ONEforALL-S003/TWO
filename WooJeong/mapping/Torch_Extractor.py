@@ -106,11 +106,12 @@ class TorchExtractor:
 
     def __init__(self,
                  quantized_model: torch.nn.Module,
+                 qdtype,
                  json_path: str,
                  mapping=None,
                  partial_graph_data=None):
         self.__np_idx = 0
-        self.__input_dtype = None
+        self.__input_dtype = qdtype
         self.__graph_data = collections.OrderedDict()
         if mapping is None:
             self.__mapping = {}
@@ -133,28 +134,8 @@ class TorchExtractor:
 
         # Restructuring Neural Network model
         for name, mod in module.named_modules():
-            # TODO: check whether there is better way to check instance of \
-            #  torch.nn.quantized.modules.* and not torch.nn.modules.Module
-            """
-            Need to skip just Module. Only Operator/Tensor/Activation Needed
-            When just using 'isinstance', all of operator/tensor/activation belong to it
-            (All of them inherit torch.nn.modules.Module)
-
-            Why '.nn.quantized.modules' instead of 'torch.nn.quantized.modules'?
-            On previous version like 1.7.0, the path is 'torch.nn.quantized.modules',
-            But on latest version, the path is 'torch.ao.nn.quantized.modules'
-            """
-            if name == '' or '.nn.quantized.modules' not in str(type(mod)):
+            if name == '' or '.nn.quantized.modules' not in str(type(mod)) or isinstance(mod, torch.nn.quantized.modules.linear.LinearPackedParams):
                 continue
-            if isinstance(mod, torch.nn.quantized.modules.linear.LinearPackedParams):
-                if self.__input_dtype is None:
-                    self.__input_dtype = mod.dtype
-                continue
-
-            # get input's quantization type
-            if self.__input_dtype is None and hasattr(mod, 'scale') and hasattr(
-                    mod, 'zero_point') and hasattr(mod, 'dtype'):
-                self.__input_dtype = mod.dtype
 
             if name in graph_data:
                 data = graph_data[name]
@@ -181,9 +162,6 @@ class TorchExtractor:
                 if tensor is None:
                     data[value_name] = None
                     continue
-
-                if self.__input_dtype is None and tensor_name == 'weight':
-                    self.__input_dtype = tensor.dtype
 
                 data[tensor_name] = tensor
 
@@ -212,9 +190,6 @@ class TorchExtractor:
         mapping = self.__mapping
         partial_data = self.__partial_graph_data
 
-        if self.__input_dtype is None:
-            raise Exception('Check network(torch model) have have tensor internally')
-
         q_dtype = self.qdtype_mapping[self.__input_dtype]
         q_dtype, dtype = q_dtype['np'], q_dtype['str']
 
@@ -223,8 +198,10 @@ class TorchExtractor:
             for null_const in partial_data['NULL']:
                 NULL_CONST.add(null_const[0])
 
-        tmp_key_list = list(graph_data.keys())
+        for name, layer in graph_data.items():
+            self.__process_layer(name, layer, q_dtype, dtype, NULL_CONST, graph_data)
 
+        tmp_key_list = list(graph_data.keys())
         if 'input' in partial_data:
             circle_input_name = partial_data['input']
             self.__process_io(circle_input_name, graph_data[tmp_key_list[0]], dtype)
@@ -233,10 +210,6 @@ class TorchExtractor:
             circle_output_name = partial_data['output']
             self.__process_io(circle_output_name, graph_data[tmp_key_list[len(tmp_key_list) - 1]], dtype)
 
-        tmp_key_list = None
-
-        for name, layer in graph_data.items():
-            self.__process_layer(name, layer, q_dtype, dtype, NULL_CONST, graph_data)
         return
 
     def __process_io(self, name: str, layer: dict, dtype: str):
@@ -534,6 +507,13 @@ class TorchExtractor:
             data['scale'] = np.array(tensor.q_scale())
             data['zerop'] = np.array(tensor.q_zero_point()).astype(np.int64)
             data['quantized_dimension'] = 0
+
+            # if tensor.dtype == torch.qint8:
+            #     scale = tensor.q_scale()
+            #     zerop = tensor.q_zero_point()
+            #     dequant = torch.dequantize(tensor)
+            #     tensor = torch.quantize_per_tensor(dequant, scale, zerop, torch.quint8)
+
             data['value'] = self.permute(to_numpy(tensor), optype=optype)
         elif tensor.qscheme() in (torch.per_channel_affine, torch.per_channel_symmetric,
                                   torch.per_channel_affine_float_qparams):
@@ -542,9 +522,16 @@ class TorchExtractor:
             data['quantized_dimension'] = self.permute_dimension(rank=len(tensor.shape),
                                                                  dimension=tensor.q_per_channel_axis(),
                                                                  optype=optype)
+            # if tensor.dtype == torch.qint8:
+            #     scale = tensor.q_per_channel_scales()
+            #     zerop = tensor.q_per_channel_zero_points()
+            #     axis = tensor.q_per_channel_axis()
+            #     dequant = torch.dequantize(tensor)
+            #     tensor = torch.quantize_per_channel(dequant, scale, zerop, axis, torch.quint8)
+
             data['value'] = self.permute(to_numpy(tensor), optype=optype)
 
-        data['dtype'] = self.qdtype_mapping[self.__input_dtype]['str']
+        data['dtype'] = self.qdtype_mapping[tensor.dtype]['str']
         if circle is not None:
             circle_shape = circle['weight.shape']
             shape = data['value'].shape
